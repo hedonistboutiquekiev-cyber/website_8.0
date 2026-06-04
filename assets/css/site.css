@@ -2363,17 +2363,28 @@ body.alba-dark-gradient main {
 
 /* Add minimal spacing below header sufficient for dropdown menus */
 /* Apply to main content containers that don't have their own spacing */
+main:not(.home-main),
+.page,
+.shop-container,
+.cart-page {
+  margin-top: 80px !important; /* Minimal header + dropdown space */
+}
+
+/* Home page content should also start directly below header/dropdown area */
+.home-main {
+  margin-top: 80px !important; /* Minimal spacing for home page */
+}
+
 @media (min-width: 769px) {
   main:not(.home-main),
   .page,
   .shop-container,
   .cart-page {
-    margin-top: 80px !important; /* Max 4 cursor sizes (80px) between header and content on desktop */
+    margin-top: 80px !important;
   }
 
-  /* Home page content should also start directly below header/dropdown area */
   .home-main {
-    margin-top: 80px !important; /* Max 4 cursor sizes (80px) between header and content on desktop */
+    margin-top: 80px !important;
   }
 }
 
