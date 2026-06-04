@@ -20,7 +20,7 @@
            aria-expanded="false"
            aria-haspopup="true"
            title="Hesap"
-           onclick="toggleAlienMenu(event)">
+           onclick="alienClick(event)">
           <img id="accountAvatar" class="account-avatar" src="/assets/icons/alien.png" alt="Hesap" width="32" height="32">
         </a>
 
@@ -206,6 +206,11 @@
     var trigger = document.querySelector('.alien-ghost');
     if (menu) menu.setAttribute('hidden', '');
     if (trigger) trigger.setAttribute('aria-expanded', 'false');
+  }
+
+  function alienClick(e) {
+    if (e) e.preventDefault();
+    window.location.href = '/account-menu.html';
   }
 
   function toggleAlienMenu(e) {

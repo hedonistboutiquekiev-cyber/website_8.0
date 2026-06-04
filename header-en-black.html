@@ -20,7 +20,7 @@
            aria-expanded="false"
            aria-haspopup="true"
            title="Account"
-           onclick="toggleAlienMenu(event)">
+           onclick="alienClick(event)">
           <img id="accountAvatar" class="account-avatar" src="/assets/icons/alien.png" alt="Account" width="32" height="32">
         </a>
 
@@ -199,10 +199,15 @@
     if (trigger) trigger.setAttribute('aria-expanded', 'false');
   }
 
+  function alienClick(e) {
+    if (e) e.preventDefault();
+    window.location.href = '/eng/account-menu.html';
+  }
+
   function toggleAlienMenu(e) {
     if (e) e.preventDefault();
     if (window.innerWidth <= 767) {
-      window.location.href = '/account-menu.html';
+      window.location.href = '/eng/account-menu.html';
       return;
     }
     var menu = document.getElementById('alienMenu');
