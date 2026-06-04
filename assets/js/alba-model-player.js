@@ -17,7 +17,16 @@
   'use strict';
 
   const WORKER_URL   = 'https://divine-flower-a0ae.nncdecdgc.workers.dev';
-  const AUDIO_PATH   = '/assets/audio/models/';
+  const DEFAULT_AUDIO_PATH = '/assets/audio/models/';
+
+  function getAudioPathPrefix() {
+    const pathname = (window.location && window.location.pathname) || '';
+    if (pathname.startsWith('/eng/')) return '/eng/assets/audio/models/';
+    if (pathname.startsWith('/rus/')) return '/rus/assets/audio/models/';
+    return DEFAULT_AUDIO_PATH;
+  }
+
+  const AUDIO_PATH = getAudioPathPrefix();
 
   // ── CSS ──────────────────────────────────────────────────────
   const CSS = `
