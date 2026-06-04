@@ -290,6 +290,55 @@
 
 .text-gradient-yellow { background: linear-gradient(to right, #fbbf24, #f59e0b); -webkit-background-clip: text; -webkit-text-fill-color: transparent; }
 	</style>
+  <style>
+/* ════════ ALBAMEN FUTURISTIC AUDIO PLAYER ════════ */
+#albaPlayer{margin-top:20px;padding:14px 16px 10px;background:linear-gradient(135deg,rgba(2,6,23,.92),rgba(15,23,42,.95));border:1px solid rgba(56,189,248,.25);border-radius:16px;box-shadow:0 0 0 1px rgba(56,189,248,.08),0 8px 32px rgba(0,0,0,.6),0 0 24px rgba(56,189,248,.12);font-family:'Courier New',monospace}
+.alba-track-name{display:flex;align-items:center;gap:8px;font-size:11px;font-weight:700;letter-spacing:.12em;text-transform:uppercase;color:#38bdf8;margin-bottom:10px;opacity:.85}
+.alba-track-dot{width:6px;height:6px;border-radius:50%;background:#38bdf8;box-shadow:0 0 8px #38bdf8;animation:albaPulse 2s ease-in-out infinite;flex-shrink:0}
+@keyframes albaPulse{0%,100%{opacity:1;box-shadow:0 0 8px #38bdf8}50%{opacity:.4;box-shadow:0 0 3px #38bdf8}}
+.alba-player-row{display:flex;align-items:center;gap:10px}
+.alba-btn{width:36px;height:36px;border-radius:50%;border:1px solid rgba(56,189,248,.4);background:rgba(56,189,248,.08);color:#38bdf8;display:flex;align-items:center;justify-content:center;cursor:pointer;flex-shrink:0;transition:background .18s,box-shadow .18s,transform .12s}
+.alba-btn svg{width:18px;height:18px}
+.alba-btn:hover{background:rgba(56,189,248,.22);box-shadow:0 0 14px rgba(56,189,248,.35);transform:scale(1.08)}
+.alba-btn:active{transform:scale(.95)}
+.alba-btn-stop{border-color:rgba(168,85,247,.4);background:rgba(168,85,247,.08);color:#a855f7}
+.alba-btn-stop:hover{background:rgba(168,85,247,.22);box-shadow:0 0 14px rgba(168,85,247,.35)}
+.alba-progress-wrap{flex:1;position:relative;height:36px;display:flex;align-items:center}
+.alba-progress-track{width:100%;height:4px;background:rgba(255,255,255,.08);border-radius:99px;position:relative;cursor:pointer;display:none}
+.alba-progress-track.visible{display:block}
+.alba-progress-fill{height:100%;width:0%;background:linear-gradient(90deg,#38bdf8,#a855f7);border-radius:99px;transition:width .1s linear;box-shadow:0 0 8px rgba(56,189,248,.5)}
+.alba-progress-thumb{width:12px;height:12px;background:#fff;border-radius:50%;position:absolute;top:50%;left:0%;transform:translate(-50%,-50%);box-shadow:0 0 8px rgba(56,189,248,.8);transition:left .1s linear;cursor:pointer}
+.alba-loading-bars{display:none;align-items:flex-end;gap:3px;height:22px;width:100%;justify-content:center}
+.alba-loading-bars.visible{display:flex}
+.alba-loading-bars span{display:block;width:4px;background:linear-gradient(to top,#38bdf8,#a855f7);border-radius:2px;animation:albaLoadBar .8s ease-in-out infinite;opacity:.7}
+.alba-loading-bars span:nth-child(1){height:8px;animation-delay:0s}
+.alba-loading-bars span:nth-child(2){height:14px;animation-delay:.08s}
+.alba-loading-bars span:nth-child(3){height:20px;animation-delay:.16s}
+.alba-loading-bars span:nth-child(4){height:14px;animation-delay:.24s}
+.alba-loading-bars span:nth-child(5){height:8px;animation-delay:.32s}
+.alba-loading-bars span:nth-child(6){height:14px;animation-delay:.40s}
+.alba-loading-bars span:nth-child(7){height:20px;animation-delay:.48s}
+.alba-loading-bars span:nth-child(8){height:14px;animation-delay:.56s}
+.alba-loading-bars span:nth-child(9){height:8px;animation-delay:.64s}
+.alba-loading-bars span:nth-child(10){height:4px;animation-delay:.72s}
+@keyframes albaLoadBar{0%,100%{transform:scaleY(.4);opacity:.4}50%{transform:scaleY(1);opacity:1}}
+.alba-eq{display:none;align-items:flex-end;gap:3px;height:22px;width:100%;justify-content:center}
+.alba-eq.visible{display:flex}
+.alba-eq span{display:block;width:4px;background:linear-gradient(to top,#38bdf8,#a855f7);border-radius:2px;animation:albaEqBar .6s ease-in-out infinite alternate}
+.alba-eq span:nth-child(1){height:8px;animation-duration:.45s}
+.alba-eq span:nth-child(2){height:18px;animation-duration:.60s}
+.alba-eq span:nth-child(3){height:22px;animation-duration:.38s}
+.alba-eq span:nth-child(4){height:14px;animation-duration:.70s}
+.alba-eq span:nth-child(5){height:10px;animation-duration:.50s}
+@keyframes albaEqBar{from{transform:scaleY(.3);opacity:.5}to{transform:scaleY(1);opacity:1}}
+.alba-time{font-size:11px;color:#94a3b8;letter-spacing:.05em;white-space:nowrap;flex-shrink:0;display:flex;align-items:center;gap:2px;min-width:60px}
+#albaCurrent{color:#38bdf8;font-weight:700}
+.alba-time-sep{color:#475569;margin:0 1px}
+.alba-status{margin-top:8px;font-size:10px;letter-spacing:.1em;color:#475569;text-transform:uppercase;padding-left:2px;transition:color .3s}
+.alba-status.active{color:#38bdf8}
+.alba-status.error{color:#f87171}
+  </style>
+
 </head>
 <body>
 <div data-include-html="/header-en.html"></div>
@@ -478,12 +527,41 @@
 <div class="glow-box glow-strong">
 <h3 id="planetTitle">Sun</h3>
 <p id="planetDesc">It is a huge sphere of plasma located at the center of the solar system. It is the energy source of all life.</p>
-<button class="btn audio-btn" id="playAudioBtn" style="background: #1e3a8a; color: white;">
-<svg fill="currentColor" height="20" style="margin-right: 8px; vertical-align: middle;" viewbox="0 0 24 24" width="20">
-<path d="M3 9v6h4l5 5V4L7 9H3zm13.5 3c0-1.77-1.02-3.29-2.5-4.03v8.05c1.48-.73 2.5-2.25 2.5-4.02zM14 3.23v2.06c2.89.86 5 3.54 5 6.71s-2.11 5.85-5 6.71v2.06c4.01-.91 7-4.49 7-8.77s-2.99-7.86-7-8.77z"></path>
-</svg>
-            Listen Aloud
-          </button>
+          <!-- ══ ALBAMEN FUTURISTIC AUDIO PLAYER ══ -->
+          <div id="albaPlayer">
+            <div class="alba-track-name">
+              <span class="alba-track-dot"></span>
+              <span id="albaTrackLabel">Sun — Narration</span>
+            </div>
+            <div class="alba-player-row">
+              <button class="alba-btn" id="albaPlayPause" title="Play / Pause" aria-label="Play">
+                <svg id="albaIconPlay" viewBox="0 0 24 24" fill="currentColor"><path d="M8 5v14l11-7z"/></svg>
+                <svg id="albaIconPause" viewBox="0 0 24 24" fill="currentColor" style="display:none"><path d="M6 19h4V5H6v14zm8-14v14h4V5h-4z"/></svg>
+              </button>
+              <button class="alba-btn alba-btn-stop" id="albaStop" title="Stop" aria-label="Stop">
+                <svg viewBox="0 0 24 24" fill="currentColor"><path d="M6 6h12v12H6z"/></svg>
+              </button>
+              <div class="alba-progress-wrap" id="albaProgressWrap">
+                <div class="alba-loading-bars" id="albaLoadingBars">
+                  <span></span><span></span><span></span><span></span><span></span>
+                  <span></span><span></span><span></span><span></span><span></span>
+                </div>
+                <div class="alba-progress-track" id="albaProgressTrack">
+                  <div class="alba-progress-fill" id="albaProgressFill"></div>
+                  <div class="alba-progress-thumb" id="albaProgressThumb"></div>
+                </div>
+                <div class="alba-eq" id="albaEq">
+                  <span></span><span></span><span></span><span></span><span></span>
+                </div>
+              </div>
+              <div class="alba-time">
+                <span id="albaCurrent">0:00</span>
+                <span class="alba-time-sep">/</span>
+                <span id="albaDuration">—:——</span>
+              </div>
+            </div>
+            <div class="alba-status" id="albaStatus">Select a planet and listen 🚀</div>
+          </div>
 </div>
 </div>
 </section>
@@ -533,42 +611,15 @@
       // 1. PLANET INTERACTION LOGIC
       // ===========================
       const planetData = {
-        sun: {
-          title: "Güneş",
-          desc: "Güneş sisteminin merkezinde yer alan, devasa bir plazma küresidir. Tüm yaşamın enerji kaynağıdır. Güneş olmasaydı, Dünya'da yaşam olmazdı."
-        },
-        mercury: {
-          title: "Merkür",
-          desc: "Güneş'e en yakın gezegendir. Yüzeyi kraterlerle doludur ve atmosferi çok incedir. Gündüzleri çok sıcak, geceleri ise dondurucu soğuktur."
-        },
-        venus: {
-          title: "Venüs",
-          desc: "Gökyüzündeki en parlak gezegendir. Kalın atmosferi ısıyı tuttuğu için Güneş sisteminin en sıcak gezegenidir. Diğer gezegenlerin aksine ters yöne döner."
-        },
-        earth: {
-          title: "Dünya",
-          desc: "Bizim evimiz! Üzerinde yaşam olduğu bilinen tek gezegendir. Yüzeyinin büyük bir kısmı sularla kaplıdır ve yaşamı koruyan bir atmosferi vardır."
-        },
-        mars: {
-          title: "Mars",
-          desc: "Kızıl Gezegen olarak bilinir. Rengini demir oksitli toprağından alır. Güneş sistemindeki en büyük volkan olan Olympos Mons burada bulunur."
-        },
-        jupiter: {
-          title: "Jüpiter",
-          desc: "Güneş sisteminin en büyük gezegenidir. Gaz devidir ve sert bir yüzeyi yoktur. Üzerindeki 'Büyük Kırmızı Leke' aslında devasa bir fırtınadır."
-        },
-        saturn: {
-          title: "Satürn",
-          desc: "Etrafındaki muhteşem halkalarıyla ünlüdür. Bu halkalar buz ve kaya parçalarından oluşur. Jüpiter'den sonraki en büyük ikinci gezegendir."
-        },
-        uranus: {
-          title: "Uranüs",
-          desc: "Buz devi olarak sınıflandırılır. Atmosferindeki metan gazı ona mavi-yeşil bir renk verir. Güneş etrafında yan yatmış bir varil gibi döner."
-        },
-        neptune: {
-          title: "Neptün",
-          desc: "Güneş'e en uzak gezegendir. Çok soğuktur ve çok şiddetli rüzgarlar eser. Koyu mavi rengiyle derin okyanusları andırır."
-        }
+        sun:     { title: "Sun",     desc: "A huge sphere of plasma at the center of the solar system. The source of energy for all life. Without the Sun there would be no life on Earth." },
+        mercury: { title: "Mercury", desc: "The closest planet to the Sun. Its surface is covered with craters and its atmosphere is very thin. Extremely hot during the day and freezing at night." },
+        venus:   { title: "Venus",   desc: "The brightest planet in the sky. Its thick atmosphere traps heat, making it the hottest planet in the solar system. It rotates in the opposite direction to most planets." },
+        earth:   { title: "Earth",   desc: "Our home! The only known planet with life. Most of its surface is covered with water and it has an atmosphere that protects life." },
+        mars:    { title: "Mars",    desc: "Known as the Red Planet. It gets its colour from iron-oxide soil. Olympus Mons, the largest volcano in the solar system, is located here." },
+        jupiter: { title: "Jupiter", desc: "The largest planet in the solar system. It is a gas giant with no solid surface. The 'Great Red Spot' is actually a massive storm that has raged for centuries." },
+        saturn:  { title: "Saturn",  desc: "Famous for its spectacular rings made of ice and rock. It is the second largest planet after Jupiter." },
+        uranus:  { title: "Uranus",  desc: "Classified as an ice giant. Methane gas in its atmosphere gives it a blue-green colour. It orbits the Sun tilted on its side like a rolling barrel." },
+        neptune: { title: "Neptune", desc: "The farthest planet from the Sun. It is very cold and has extremely fierce winds. Its deep blue colour resembles a vast ocean." }
       };
 
       const planets = document.querySelectorAll('.celestial-body');
@@ -601,11 +652,164 @@
         });
       });
 
-      // Optional: Button click handler
-      if(playBtn) {
-        playBtn.addEventListener('click', () => {
-          alert('Ses dosyası oynatılıyor... (Demo)');
+      
+      // ════════════════════════════════════════════════════════
+      // ALBAMEN FUTURISTIC AUDIO PLAYER
+      // MP3: /assets/audio/albamen/{planet-id}.mp3
+      // ════════════════════════════════════════════════════════
+
+      const ALBA_AUDIO_PATH = '/assets/audio/albamen/';
+
+      let albaAudio     = null;
+      let albaCurrentId = 'sun';
+      let albaIsLoading = false;
+
+      const elPlayPause    = document.getElementById('albaPlayPause');
+      const elStop         = document.getElementById('albaStop');
+      const elIconPlay     = document.getElementById('albaIconPlay');
+      const elIconPause    = document.getElementById('albaIconPause');
+      const elProgressTrack= document.getElementById('albaProgressTrack');
+      const elProgressFill = document.getElementById('albaProgressFill');
+      const elProgressThumb= document.getElementById('albaProgressThumb');
+      const elLoadingBars  = document.getElementById('albaLoadingBars');
+      const elEq           = document.getElementById('albaEq');
+      const elCurrent      = document.getElementById('albaCurrent');
+      const elDuration     = document.getElementById('albaDuration');
+      const elStatus       = document.getElementById('albaStatus');
+      const elTrackLabel   = document.getElementById('albaTrackLabel');
+
+      function albaFmt(s) {
+        if (!isFinite(s)) return '—:——';
+        const m = Math.floor(s / 60), sec = Math.floor(s % 60);
+        return m + ':' + String(sec).padStart(2,'0');
+      }
+
+      function albaSetState(state) {
+        elLoadingBars.classList.toggle('visible', state === 'loading');
+        elEq.classList.toggle('visible', state === 'playing');
+        elProgressTrack.classList.toggle('visible', state === 'playing' || state === 'paused');
+        elIconPlay.style.display  = (state === 'playing') ? 'none' : '';
+        elIconPause.style.display = (state === 'playing') ? ''     : 'none';
+
+        const statusMap = {
+          idle:    { text: 'Select a planet and listen 🚀', cls: '' },
+          loading: { text: 'Loading...', cls: 'active' },
+          playing: { text: 'Playing ▶', cls: 'active' },
+          paused:  { text: 'Paused ⏸', cls: '' },
+          stopped: { text: 'Stopped ⏹', cls: '' },
+          error:   { text: 'MP3 not found — reading text...', cls: 'error' },
+        };
+        const s = statusMap[state] || statusMap.idle;
+        elStatus.textContent = s.text;
+        elStatus.className   = 'alba-status ' + s.cls;
+      }
+
+      function albaResetProgress() {
+        elProgressFill.style.width = '0%';
+        elProgressThumb.style.left = '0%';
+        elCurrent.textContent  = '0:00';
+        elDuration.textContent = '—:——';
+      }
+
+      function albaDestroyAudio() {
+        if (albaAudio) {
+          albaAudio.pause();
+          albaAudio.src = '';
+          albaAudio = null;
+        }
+        albaResetProgress();
+      }
+
+      function albaLoadAndPlay(planetId, planetTitle) {
+        albaDestroyAudio();
+        albaSetState('loading');
+        albaIsLoading = true;
+
+        const src = ALBA_AUDIO_PATH + planetId + '.mp3';
+        albaAudio = new Audio(src);
+        albaAudio.preload = 'auto';
+
+        albaAudio.addEventListener('loadedmetadata', () => {
+          elDuration.textContent = albaFmt(albaAudio.duration);
         });
+
+        albaAudio.addEventListener('timeupdate', () => {
+          if (!albaAudio.duration) return;
+          const pct = (albaAudio.currentTime / albaAudio.duration) * 100;
+          elProgressFill.style.width = pct + '%';
+          elProgressThumb.style.left = pct + '%';
+          elCurrent.textContent = albaFmt(albaAudio.currentTime);
+        });
+
+        albaAudio.addEventListener('canplay', () => {
+          albaIsLoading = false;
+          albaAudio.play().then(() => albaSetState('playing')).catch(() => albaSetState('error'));
+        });
+
+        albaAudio.addEventListener('ended', () => {
+          albaSetState('stopped');
+          albaResetProgress();
+        });
+
+        albaAudio.addEventListener('error', () => {
+          albaIsLoading = false;
+          albaSetState('error');
+          albaDestroyAudio();
+          const desc = descEl ? descEl.textContent : '';
+          if (window.albamenSpeak) {
+            window.albamenSpeak(`${planetTitle}. ${desc}`, 'en');
+          }
+        });
+      }
+
+      if (elPlayPause) {
+        elPlayPause.addEventListener('click', () => {
+          if (albaIsLoading) return;
+          if (!albaAudio || albaAudio.ended || albaAudio.src === '' || albaAudio.src === location.href) {
+            albaLoadAndPlay(albaCurrentId, titleEl ? titleEl.textContent : albaCurrentId);
+            return;
+          }
+          if (albaAudio.paused) {
+            albaAudio.play();
+            albaSetState('playing');
+          } else {
+            albaAudio.pause();
+            albaSetState('paused');
+          }
+        });
+      }
+
+      if (elStop) {
+        elStop.addEventListener('click', () => {
+          if (window.albamenStopSpeaking) window.albamenStopSpeaking();
+          albaDestroyAudio();
+          albaSetState('stopped');
+        });
+      }
+
+      if (elProgressTrack) {
+        elProgressTrack.addEventListener('click', (e) => {
+          if (!albaAudio || !albaAudio.duration) return;
+          const rect = elProgressTrack.getBoundingClientRect();
+          const pct  = (e.clientX - rect.left) / rect.width;
+          albaAudio.currentTime = pct * albaAudio.duration;
+        });
+      }
+
+      planets.forEach(planet => {
+        planet.addEventListener('click', function() {
+          const id = this.getAttribute('data-id');
+          if (!id) return;
+          albaCurrentId = id;
+          setTimeout(() => {
+            const title = titleEl ? titleEl.textContent : id;
+            if (elTrackLabel) elTrackLabel.textContent = title + ' — Narration';
+          }, 50);
+          if (window.albamenStopSpeaking) window.albamenStopSpeaking();
+          albaDestroyAudio();
+          albaSetState('idle');
+        });
+      }););
       }
 
 
@@ -682,5 +886,8 @@
       }
   </script>
   <script src="/assets/js/particles.js"></script>
+
+<!-- Google TTS модуль -->
+<script src="/assets/js/albamen-tts.js"></script>
 </body>
 </html>
