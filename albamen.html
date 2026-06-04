@@ -675,11 +675,23 @@
 
       // ════════════════════════════════════════════════════════
       // ALBAMEN FUTURISTIC AUDIO PLAYER
-      // MP3 файлы: /assets/audio/albamen/{planet-id}.mp3
-      // Fallback: Google TTS через albamen-tts.js
+      // MP3 файлы: language-specific folder, e.g. /eng/assets/audio/models/{planet-id}.mp3
+      // Fallback: /assets/audio/models/
       // ════════════════════════════════════════════════════════
 
-      const ALBA_AUDIO_PATH = '/assets/audio/albamen/';
+      function getLangAudioBase() {
+        try {
+          const parts = window.location.pathname.split('/').filter(Boolean);
+          const first = parts[0] || '';
+          const langs = ['eng', 'rus', 'tr', 'ru', 'en'];
+          if (langs.includes(first)) {
+            return '/' + first + '/assets/audio/models/';
+          }
+        } catch (e) {}
+        return '/assets/audio/models/';
+      }
+
+      const ALBA_AUDIO_PATH = getLangAudioBase();
 
       // Состояние плеера
       let albaAudio     = null;   // HTMLAudioElement

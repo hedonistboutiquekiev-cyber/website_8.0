@@ -653,10 +653,23 @@
       
       // ════════════════════════════════════════════════════════
       // ALBAMEN FUTURISTIC AUDIO PLAYER
-      // MP3: /assets/audio/albamen/{planet-id}.mp3
+      // MP3: language-specific folder, e.g. /rus/assets/audio/models/{planet-id}.mp3
+      // Falls back to /assets/audio/models/
       // ════════════════════════════════════════════════════════
 
-      const ALBA_AUDIO_PATH = '/assets/audio/albamen/';
+      function getLangAudioBase() {
+        try {
+          const parts = window.location.pathname.split('/').filter(Boolean);
+          const first = parts[0] || '';
+          const langs = ['eng', 'rus', 'tr', 'ru', 'en'];
+          if (langs.includes(first)) {
+            return '/' + first + '/assets/audio/models/';
+          }
+        } catch (e) {}
+        return '/assets/audio/models/';
+      }
+
+      const ALBA_AUDIO_PATH = getLangAudioBase();
 
       let albaAudio     = null;
       let albaCurrentId = 'sun';

@@ -138,6 +138,7 @@ runAfterDomReady(() => {
   const ensurePreloaderScript = createPreloaderLoader();
   const ensureModelPreloader = createModelPreloaderLoader();
   const ensureModelNavLoader = createModelNavLoader();
+  const ensureAlbaModelPlayer = createAlbaModelPlayerLoader();
   // 5. Mobile nav override - REMOVED, using site.css mobile styles instead
   // The override was causing pointer-events issues with menu toggle
   // 6. Load includes (Header / Footer)
@@ -247,6 +248,7 @@ runAfterDomReady(() => {
             ensurePreloaderScript();
             ensureModelPreloader();
             ensureModelNavLoader();
+            ensureAlbaModelPlayer();
             // Re-initialize dropdowns after dynamic header insertion
             // Retry loop handles race condition where menu-toggle.js may still be loading
             (function tryInitDropdowns(attempts) {
@@ -276,6 +278,7 @@ runAfterDomReady(() => {
           if (url.includes("footer-")) {
             enhanceFooter(el);
             ensureModelPreloader();
+            ensureAlbaModelPlayer();
           }
           // After an include is injected, re-scan for revealable elements so
           // dynamically-inserted content (header/footer) and content shown by
@@ -288,6 +291,7 @@ runAfterDomReady(() => {
     });
   } else {
     ensureModelPreloader();
+    ensureAlbaModelPlayer();
   }
   // 7. GLOBAL AI WIDGET (Albamen / Albaman) — текстовый чат
   // Отключаем авто-открытие по умолчанию — будем открывать только по клику
@@ -1070,6 +1074,21 @@ function createModelNavLoader() {
     script.src = '/assets/js/model-nav-loader.js';
     script.defer = true;
     script.dataset.modelNavLoader = 'true';
+    document.head.appendChild(script);
+    loaded = true;
+  };
+}
+
+function createAlbaModelPlayerLoader() {
+  let loaded = false;
+  return function ensureAlbaModelPlayer() {
+    if (loaded) return;
+    if (!document.querySelector('model-viewer')) return;
+    if (document.querySelector('script[data-alba-model-player]')) { loaded = true; return; }
+    const script = document.createElement('script');
+    script.src = '/assets/js/alba-model-player.js';
+    script.defer = true;
+    script.dataset.albaModelPlayer = 'true';
     document.head.appendChild(script);
     loaded = true;
   };
