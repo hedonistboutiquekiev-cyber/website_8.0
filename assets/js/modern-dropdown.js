@@ -79,31 +79,31 @@
         trigger.setAttribute('aria-expanded', !isActive);
       });
 
-      // Enhanced hover handlers for desktop
-      if (window.innerWidth > 1024) {
-        dropdown.addEventListener('mouseenter', function() {
-          if (closeTimeout) {
-            clearTimeout(closeTimeout);
-            closeTimeout = null;
+      // Bug fix: always attach hover listeners, but check screen size at runtime.
+      // Previously wrapped in `if (window.innerWidth > 1024)` which meant listeners
+      // were never added on mobile, so hover never worked after rotating/resizing to desktop.
+      dropdown.addEventListener('mouseenter', function () {
+        if (window.innerWidth <= 1024) return;
+        if (closeTimeout) {
+          clearTimeout(closeTimeout);
+          closeTimeout = null;
+        }
+        if (activeDropdown && activeDropdown !== dropdown) {
+          closeDropdown(activeDropdown);
+        }
+        openDropdown(dropdown);
+        activeDropdown = dropdown;
+      });
+
+      dropdown.addEventListener('mouseleave', function () {
+        if (window.innerWidth <= 1024) return;
+        closeTimeout = setTimeout(() => {
+          if (activeDropdown === dropdown) {
+            closeDropdown(dropdown);
+            activeDropdown = null;
           }
-
-          if (activeDropdown && activeDropdown !== dropdown) {
-            closeDropdown(activeDropdown);
-          }
-
-          openDropdown(dropdown);
-          activeDropdown = dropdown;
-        });
-
-        dropdown.addEventListener('mouseleave', function() {
-          closeTimeout = setTimeout(() => {
-            if (activeDropdown === dropdown) {
-              closeDropdown(dropdown);
-              activeDropdown = null;
-            }
-          }, 150); // Small delay for smooth UX
-        });
-      }
+        }, 150);
+      });
 
       // Touch support for mobile devices
       let touchStartY = 0;

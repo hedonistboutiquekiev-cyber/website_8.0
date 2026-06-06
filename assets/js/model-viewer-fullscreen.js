@@ -89,6 +89,20 @@
   style.textContent = CSS;
   document.head.appendChild(style);
 
+  // Bug fix: single shared Escape handler — prevents N listeners accumulating
+  // when there are N model-viewer elements on the same page
+  var _activeOverlay = null;
+  if (!document.__mvFsEscHandler) {
+    document.__mvFsEscHandler = true;
+    document.addEventListener('keydown', function (e) {
+      if (e.key === 'Escape' && _activeOverlay) {
+        _activeOverlay.classList.remove('open');
+        document.body.style.overflow = '';
+        _activeOverlay = null;
+      }
+    });
+  }
+
   /* Wait until DOM + model-viewer elements are ready */
   function init() {
     var viewers = document.querySelectorAll('model-viewer');
@@ -151,23 +165,23 @@
         if (!e.isTrusted || !btnReady) return;
         syncSrc();
         overlay.classList.add('open');
+        _activeOverlay = overlay;
         document.body.style.overflow = 'hidden';
         /* trigger resize so model-viewer renders correctly at full size */
         setTimeout(function () { window.dispatchEvent(new Event('resize')); }, 50);
       });
 
-      /* Close   */
+      /* Close */
       function closeOverlay() {
         overlay.classList.remove('open');
         document.body.style.overflow = '';
+        if (_activeOverlay === overlay) _activeOverlay = null;
       }
       closeBtn.addEventListener('click', closeOverlay);
       overlay.addEventListener('click', function (e) {
         if (e.target === overlay) closeOverlay();
       });
-      document.addEventListener('keydown', function (e) {
-        if (e.key === 'Escape') closeOverlay();
-      });
+      // Escape is handled by the single shared listener above
     });
   }
 

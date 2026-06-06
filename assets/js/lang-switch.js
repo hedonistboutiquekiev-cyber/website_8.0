@@ -1,56 +1,64 @@
-
-(function(){
-  window.setupLangSwitch = function() {
+(function () {
+  // Bug fix: use [data-lang] selector (matches actual header HTML), not .lang-flag
+  window.setupLangSwitch = function () {
     const path = window.location.pathname || '/';
-    // Get filename, handling both root files and subdirectories
     let fileName = path.split('/').pop();
-    if (!fileName) fileName = 'index.html'; // Handle root path '/'
-    
-    // Safety check for empty filename (e.g. trailing slash)
-    if (path.endsWith('/')) fileName = 'index.html';
+    if (!fileName || path.endsWith('/')) fileName = 'index.html';
 
     const container = document.querySelector('.top-lang-switch');
-    if(!container) return;
+    if (!container) return;
 
-    container.querySelectorAll('.lang-flag').forEach(a => {
+    container.querySelectorAll('[data-lang]').forEach(a => {
       const lang = a.dataset.lang;
-      if(!lang) return;
-      
-      let targetHref = '/index.html';
-      
+      if (!lang) return;
+
+      // Set correct href for each language
+      let targetHref;
       if (lang === 'tr') {
-        // Turkish is root
         targetHref = '/' + fileName;
       } else if (lang === 'en') {
         targetHref = '/eng/' + fileName;
       } else if (lang === 'ru') {
         targetHref = '/rus/' + fileName;
+      } else {
+        return;
       }
-
       a.href = targetHref;
-      
+
       // Active state
       const isEng = path.startsWith('/eng/');
       const isRus = path.startsWith('/rus/');
-      const isTr = !isEng && !isRus;
-      
-      a.classList.toggle('active', (lang === 'en' && isEng) || (lang === 'ru' && isRus) || (lang === 'tr' && isTr));
+      const isTr  = !isEng && !isRus;
+      a.classList.toggle('active',
+        (lang === 'en' && isEng) ||
+        (lang === 'ru' && isRus) ||
+        (lang === 'tr' && isTr)
+      );
     });
   };
 
   // Run on load
-  if(document.readyState === 'loading') {
+  if (document.readyState === 'loading') {
     document.addEventListener('DOMContentLoaded', window.setupLangSwitch);
   } else {
     window.setupLangSwitch();
   }
 
-  // Observer for dynamic changes (like header injection)
-  const observer = new MutationObserver((mutations, obs) => {
-    if(document.querySelector('.top-lang-switch')){
+  // Bug fix: observer disconnects once header is found — no need to watch forever
+  var _observerActive = true;
+  var observer = new MutationObserver(function () {
+    if (!_observerActive) return;
+    if (document.querySelector('.top-lang-switch')) {
       window.setupLangSwitch();
-      // Don't disconnect, as header might be re-injected or changed
+      // Stop observing — include.js also calls setupLangSwitch after header injection,
+      // and the guard in that function prevents duplicate listener attachment.
+      _observerActive = false;
+      observer.disconnect();
     }
   });
-  observer.observe(document.body, { childList: true, subtree: true });
+
+  // Only start observer if header isn't already in the DOM
+  if (!document.querySelector('.top-lang-switch')) {
+    observer.observe(document.body, { childList: true, subtree: true });
+  }
 })();
