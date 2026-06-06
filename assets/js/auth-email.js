@@ -268,15 +268,32 @@
 
   function init() {
     injectCSS();
-    // Wait for header to be injected by include.js, then build form
-    var attempts = 0;
-    var iv = setInterval(function () {
+
+    // If header is already in the DOM — build immediately
+    if (document.querySelector('#alienMenu .alien-auth-logged-out')) {
+      buildForm();
+      return;
+    }
+
+    // Bug #11 fix: MutationObserver instead of setInterval polling.
+    // - Reacts instantly the moment include.js injects the header fragment
+    // - Disconnects itself after first successful inject (no lingering watcher)
+    // - Hard timeout (10s) disconnects the observer if header never arrives,
+    //   preventing a forever-running observer on broken pages
+    var observer = new MutationObserver(function () {
       if (document.querySelector('#alienMenu .alien-auth-logged-out')) {
-        clearInterval(iv);
+        observer.disconnect();
+        clearTimeout(giveUpTimer);
         buildForm();
       }
-      if (++attempts > 40) clearInterval(iv);
-    }, 200);
+    });
+
+    observer.observe(document.body, { childList: true, subtree: true });
+
+    var giveUpTimer = setTimeout(function () {
+      observer.disconnect();
+      // Form never appeared — silently abort (header failed to load)
+    }, 10000);
   }
 
   if (document.readyState === 'loading') {

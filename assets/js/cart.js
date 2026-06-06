@@ -140,6 +140,59 @@
     return cart;
   }
 
+  /**
+   * Bug #14 fix: Remove item by its stable `id` field instead of positional
+   * index.  Safe against cross-tab localStorage mutations between render and
+   * click.
+   *
+   * @param {string} id  The item's id (e.g. the model slug).
+   * @param {string} [size]   Optional variant discriminator.
+   * @param {string} [color]  Optional variant discriminator.
+   * @returns {Array<Object>} The updated cart.
+   */
+  function removeById(id, size, color) {
+    const cart = load();
+    const idx = cart.findIndex(e =>
+      e.id === id &&
+      (size  === undefined || e.size  === size) &&
+      (color === undefined || e.color === color)
+    );
+    if (idx < 0) return cart;
+    cart.splice(idx, 1);
+    save(cart);
+    updateBadge();
+    return cart;
+  }
+
+  /**
+   * Bug #14 fix: Update quantity by stable item `id` instead of positional
+   * index.  If the new quantity is less than 1 the item is removed.
+   *
+   * @param {string} id   The item's id.
+   * @param {number} qty  New quantity.
+   * @param {string} [size]
+   * @param {string} [color]
+   * @returns {Array<Object>} The updated cart.
+   */
+  function updateQtyById(id, qty, size, color) {
+    const cart = load();
+    const idx = cart.findIndex(e =>
+      e.id === id &&
+      (size  === undefined || e.size  === size) &&
+      (color === undefined || e.color === color)
+    );
+    if (idx < 0) return cart;
+    const newQty = Number(qty);
+    if (newQty <= 0) {
+      cart.splice(idx, 1);
+    } else {
+      cart[idx].qty = newQty;
+    }
+    save(cart);
+    updateBadge();
+    return cart;
+  }
+
   // Expose the API globally
   window.cartManager = {
     load,
@@ -148,7 +201,10 @@
     updateBadge,
     addItem,
     updateQty,
-    remove
+    remove,
+    // Bug #14 fix: ID-based methods (preferred — safe against index drift)
+    removeById,
+    updateQtyById,
   };
 
   /**
