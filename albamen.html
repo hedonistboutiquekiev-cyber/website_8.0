@@ -548,6 +548,40 @@
           <h3 id="planetTitle">Güneş</h3>
           <p id="planetDesc">Güneş sisteminin merkezinde yer alan, devasa bir plazma küresidir. Tüm yaşamın enerji kaynağıdır.</p>
           <!-- ══ ALBAMEN FUTURISTIC AUDIO PLAYER ══ -->
+          <div id="albaPlayer">
+            <div class="alba-track-name">
+              <span class="alba-track-dot"></span>
+              <span id="albaTrackLabel">Güneş — Sesli Anlatım</span>
+            </div>
+            <div class="alba-player-row">
+              <button id="albaPlayPause" class="alba-btn" aria-label="Oynat/Duraklat">
+                <svg id="albaIconPlay" viewBox="0 0 24 24" fill="currentColor"><path d="M8 5v14l11-7z"/></svg>
+                <svg id="albaIconPause" viewBox="0 0 24 24" fill="currentColor" style="display:none;"><path d="M6 4h4v16H6V4zm8 0h4v16h-4V4z"/></svg>
+              </button>
+              <button id="albaStop" class="alba-btn alba-btn-stop" aria-label="Durdur">
+                <svg viewBox="0 0 24 24" fill="currentColor"><path d="M6 6h12v12H6z"/></svg>
+              </button>
+              <div class="alba-progress-wrap">
+                <div class="alba-progress-track" id="albaProgressTrack">
+                  <div class="alba-progress-fill" id="albaProgressFill"></div>
+                  <div class="alba-progress-thumb" id="albaProgressThumb"></div>
+                </div>
+                <div class="alba-loading-bars" id="albaLoadingBars">
+                  <span></span><span></span><span></span><span></span><span></span>
+                  <span></span><span></span><span></span><span></span><span></span>
+                </div>
+                <div class="alba-eq" id="albaEq">
+                  <span></span><span></span><span></span><span></span><span></span>
+                </div>
+              </div>
+              <div class="alba-time">
+                <span id="albaCurrent">0:00</span>
+                <span class="alba-time-sep">/</span>
+                <span id="albaDuration">—:——</span>
+              </div>
+            </div>
+            <div class="alba-status" id="albaStatus">Gezegen seç ve dinle 🚀</div>
+          </div>
         </div>
       </div>
     </section>
