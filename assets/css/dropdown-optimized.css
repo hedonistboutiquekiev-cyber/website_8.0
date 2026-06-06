@@ -167,6 +167,34 @@
 
   /* ALBAMEN: horizontal dropdown like other menus, centered between hizmetler and hakkimizda */
 
+  /* Desktop: force ALBAMEN menu to display as single horizontal row */
+  @media (min-width: 1024px) {
+    .main-nav .dropdown > .dropdown-trigger[href$="albamen.html"] + .dropdown-menu {
+      left: 50% !important;
+      right: auto !important;
+      transform: translateX(-50%) !important;
+      top: calc(100% + 6px) !important;
+      display: flex !important;
+      flex-direction: row !important;
+      align-items: center !important;
+      gap: 8px !important;
+      padding: 8px !important;
+      border-radius: 8px !important;
+      z-index: 2147483647 !important;
+      background: #020617 !important;
+    }
+
+    .main-nav .dropdown > .dropdown-trigger[href$="albamen.html"] + .dropdown-menu a,
+    .main-nav .dropdown > .dropdown-trigger[href$="albamen.html"] + .dropdown-menu button {
+      width: auto !important;
+      white-space: nowrap !important;
+      display: inline-flex !important;
+      padding: 10px 14px !important;
+      pointer-events: auto !important;
+      z-index: 2147483648 !important;
+    }
+  }
+
   /* Ensure header dropdown items are clickable */
   .main-nav .dropdown .dropdown-menu a,
   .main-nav .dropdown .dropdown-menu button,
