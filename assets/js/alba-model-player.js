@@ -423,8 +423,10 @@
     }
 
     // ── Кнопка Play / Pause ────────────────────────────────────
+    // FIX: Removed `if (loading) return;` — audio must work independently of 3D model loading.
+    // The `loading` flag tracked MP3 fetch, not 3D model state, but caused confusion when
+    // the 3D model got stuck in permanent loading due to 404. Audio is now always clickable.
     el.play.addEventListener('click', () => {
-      if (loading) return;
 
       // TTS пауза не поддерживается — просто стоп
       if (ttsActive) { stopAll(); return; }

@@ -1,32 +1,42 @@
 /**
  * Model Viewer Error Handler
  * Attaches error handling to model-viewer elements
+ * FIX: Removed infinite reload loop. Shows zaglushka.glb as fallback on 404.
  */
 (function() {
   'use strict';
+
+  const FALLBACK_MODEL = '/assets/models/zaglushka.glb';
 
   // Function to enhance a model-viewer element
   const enhanceViewer = (viewer) => {
     if (!viewer || viewer.__enhanced) return;
     viewer.__enhanced = true;
+    let errorCount = 0;
 
     // Add error listener
     viewer.addEventListener('error', (event) => {
-      console.warn('[model-viewer] Load error:', event);
-      // Try to recover by reloading the model after a delay
-      setTimeout(() => {
-        const src = viewer.getAttribute('src');
-        if (src) {
-          console.log('[model-viewer] Attempting to recover by reloading...');
-          viewer.removeAttribute('src');
-          setTimeout(() => viewer.setAttribute('src', src), 100);
-        }
-      }, 2000);
+      errorCount++;
+      const src = viewer.getAttribute('src');
+
+      // FIX: Don't retry if it's already the fallback, or after 1 attempt
+      if (errorCount > 1 || src === FALLBACK_MODEL) {
+        console.warn('[model-viewer] Model failed to load, giving up:', src);
+        viewer.dispatchEvent(new CustomEvent('model-load-failed', { bubbles: true }));
+        return;
+      }
+
+      console.warn('[model-viewer] Model not found, loading fallback:', src, '→', FALLBACK_MODEL);
+      // FIX: Load zaglushka instead of retrying the same broken URL
+      viewer.setAttribute('src', FALLBACK_MODEL);
     }, false);
 
     // Add load listener
     viewer.addEventListener('load', (event) => {
       console.log('[model-viewer] Model loaded successfully');
+      // Hide loading overlay if present
+      const overlay = viewer.parentNode && viewer.parentNode.querySelector('.mv-loading-overlay');
+      if (overlay) overlay.style.display = 'none';
     }, false);
 
     // Add progress listener
