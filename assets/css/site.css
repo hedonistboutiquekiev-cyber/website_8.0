@@ -1541,6 +1541,48 @@ select, select option {
   display: flex;
   flex-direction: column;
   gap: 10px;
+
+  /* BUG FIX: hidden by default, shown when chat is active */
+  opacity: 0;
+  pointer-events: none;
+}
+
+/* ── BUG FIX: ai-panel-body must be position:relative so that
+   ai-messages-list (position:absolute) anchors to it ── */
+.ai-panel-body {
+  position: relative !important;
+}
+
+/* ── BUG FIX: chat-active state — hide avatar/status, show message list ── */
+.ai-panel-global.chat-active .ai-chat-avatar-large { display: none !important; }
+.ai-panel-global.chat-active .ai-status-text       { display: none !important; }
+.ai-panel-global.chat-active .ai-messages-list     {
+  opacity: 1;
+  pointer-events: auto;
+}
+
+/* ── BUG FIX: message bubble styles (.ai-msg was completely missing from CSS) ── */
+.ai-msg {
+  max-width: 85%;
+  padding: 9px 13px;
+  border-radius: 14px;
+  font-size: 13px;
+  line-height: 1.5;
+  word-break: break-word;
+  white-space: pre-wrap;
+}
+.ai-msg.user {
+  align-self: flex-end;
+  background: #00c2ff;
+  color: #020617;
+  border-bottom-right-radius: 4px;
+}
+.ai-msg.bot {
+  align-self: flex-start;
+  background: rgba(255, 255, 255, 0.10);
+  color: #e5e7eb;
+  border: 1px solid rgba(255, 255, 255, 0.12);
+  border-bottom-left-radius: 4px;
 }
 
 /* =========================

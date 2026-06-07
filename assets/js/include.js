@@ -707,8 +707,10 @@ runAfterDomReady(() => {
           addMessage(reply, 'bot');
           statusText.style.display = 'none';
 
-          // 🔊 Speak the reply in superhero voice
-          speakAlbamen(reply);
+          // 🔊 Speak the reply — setTimeout breaks out of fetch().then() chain,
+          // restoring the browser's autoplay/audio permission context (Chrome blocks
+          // SpeechSynthesis when called directly inside async fetch callbacks)
+          setTimeout(() => speakAlbamen(reply), 0);
         })
         .catch(err => {
           console.error('AI Error:', err);
@@ -1323,4 +1325,3 @@ function getAlbamenIdentity() {
     age: localStorage.getItem('albamen_user_age') || null,
   };
 }
-
