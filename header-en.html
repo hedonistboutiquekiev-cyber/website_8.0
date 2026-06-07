@@ -206,20 +206,7 @@
 
   function toggleAlienMenu(e) {
     if (e) e.preventDefault();
-    if (window.innerWidth <= 767) {
-      window.location.href = '/eng/account-menu.html';
-      return;
-    }
-    var menu = document.getElementById('alienMenu');
-    var trigger = document.querySelector('.alien-ghost');
-    if (!menu || !trigger) return;
-    if (menu.hasAttribute('hidden')) {
-      positionAlienMenu(menu, trigger);
-      menu.removeAttribute('hidden');
-      trigger.setAttribute('aria-expanded', 'true');
-    } else {
-      closeAlienMenu();
-    }
+    window.location.href = '/account-menu.html';
   }
 
   window.addEventListener('resize', function () {
