@@ -45,7 +45,21 @@
 </head>
 
 <body>
-  <style> /* Отключаем все анимации и переходы на этой странице */ * { animation: none !important; transition: none !important; } *::before, *::after { animation: none !important; transition: none !important; } body { scroll-behavior: auto !important; } .voice-bar { animation: none !important; } .voice-stop-btn { animation: none !important; } [style*="animation"] { animation: none !important; } [style*="transition"] { transition: none !important; } /* Делаем все элементы с классом .reveal видимыми сразу */ .reveal { opacity: 1 !important; transform: translateY(0) !important; filter: none !important; } .reveal[data-direction="left"] { transform: translateX(0) !important; } .reveal[data-direction="right"] { transform: translateX(0) !important; } </style>
+  <style>
+    /* Отключаем анимации на странице, НО исключаем #star-bg — иначе particles.js не работает */
+    *:not(#star-bg) { animation: none !important; transition: none !important; }
+    *:not(#star-bg)::before, *:not(#star-bg)::after { animation: none !important; transition: none !important; }
+    body { scroll-behavior: auto !important; }
+    .voice-bar { animation: none !important; }
+    .voice-stop-btn { animation: none !important; }
+    [style*="animation"]:not(#star-bg) { animation: none !important; }
+    [style*="transition"]:not(#star-bg) { transition: none !important; }
+    .reveal { opacity: 1 !important; transform: translateY(0) !important; filter: none !important; }
+    .reveal[data-direction="left"] { transform: translateX(0) !important; }
+    .reveal[data-direction="right"] { transform: translateX(0) !important; }
+    /* Отступ между hero-блоком и кнопками категорий */
+    .atlas-hero { margin-bottom: 28px !important; }
+  </style>
   <div data-include="/header-tr.html"></div>
 
   <div class="atlas-shell">
@@ -127,6 +141,8 @@
   </div>
 
   <div data-include="/footer-tr.html"></div>
+
+  <script src="/assets/js/particles.js"></script>
 
   <script>
     document.addEventListener('DOMContentLoaded', () => {
