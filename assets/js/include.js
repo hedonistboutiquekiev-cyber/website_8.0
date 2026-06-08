@@ -656,7 +656,10 @@ runAfterDomReady(() => {
           history: historySlice
         })
       })
-        .then(res => res.json())
+        .then(res => {
+          if (!res.ok) throw new Error('Worker HTTP ' + res.status);
+          return res.json();
+        })
         .then(data => {
           const loader = document.getElementById(loadingId);
           if (loader) loader.remove();
