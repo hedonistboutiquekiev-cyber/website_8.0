@@ -40,6 +40,11 @@
   box-shadow: 0 0 0 1px rgba(56,189,248,.07), 0 8px 32px rgba(0,0,0,.65), 0 0 22px rgba(56,189,248,.10);
   font-family: 'Courier New', monospace;
   box-sizing: border-box;
+  /* FIX: stay above the .model-loading-overlay (z-index: 9999) and remain
+     clickable even if the player ever ends up sharing a stacking context
+     with the 3D-model loading overlay. */
+  position: relative;
+  z-index: 10000;
 }
 .amp-track {
   display: flex; align-items: center; gap: 8px;
@@ -253,7 +258,24 @@
     // Инжектируем HTML перед model-viewer
     const wrapper = document.createElement('div');
     wrapper.innerHTML = buildHTML(trackName);
-    modelViewer.parentNode.insertBefore(wrapper.firstElementChild, modelViewer);
+    const playerEl = wrapper.firstElementChild;
+
+    // FIX: model-preloader.js may wrap <model-viewer> in a `.viewer-wrapper`
+    // (position: relative) and place a full-cover `.model-loading-overlay`
+    // (position: absolute; inset: 0; z-index: 9999; pointer-events: auto)
+    // inside it while the 3D model is loading. If alba-model-player.js runs
+    // AFTER that wrapping (script execution order between dynamically loaded
+    // scripts is not guaranteed), `modelViewer.parentNode` becomes that
+    // `.viewer-wrapper`, so the audio player would be inserted INSIDE it and
+    // get covered by the loading overlay — making the play button unclickable
+    // until the model finishes loading. Always place the player OUTSIDE of
+    // any `.viewer-wrapper`, as a sibling before it, so it is never blocked.
+    const viewerWrapper = modelViewer.closest('.viewer-wrapper');
+    if (viewerWrapper && viewerWrapper.parentNode) {
+      viewerWrapper.parentNode.insertBefore(playerEl, viewerWrapper);
+    } else {
+      modelViewer.parentNode.insertBefore(playerEl, modelViewer);
+    }
 
     // DOM ссылки
     const el = {
