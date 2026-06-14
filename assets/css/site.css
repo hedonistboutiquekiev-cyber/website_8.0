@@ -2444,6 +2444,43 @@ main:not(.home-main),
   }
 }
 
+/* ================================================================
+   MOBILE: REMOVE GAP BETWEEN HEADER AND PAGE CONTENT
+   Excludes .albamen-page — that page uses intentional padding in .hero
+   ================================================================ */
+@media (max-width: 1023px) {
+  /* Home page */
+  body:not(.albamen-page) .home-main {
+    margin-top: 0 !important;
+  }
+
+  /* Atlas pages — .atlas-shell has margin-top: 40px */
+  body:not(.albamen-page) .atlas-shell {
+    margin-top: 0 !important;
+  }
+
+  /* Model-viewer pages — h1 direct child of body */
+  body:not(.albamen-page):has(model-viewer) > h1 {
+    margin-top: 0 !important;
+  }
+
+  /* Generic first content containers */
+  body:not(.albamen-page) > main:first-of-type,
+  body:not(.albamen-page) > section:first-of-type,
+  body:not(.albamen-page) > .page,
+  body:not(.albamen-page) > .shop-container,
+  body:not(.albamen-page) > .cart-page {
+    margin-top: 0 !important;
+    padding-top: 0 !important;
+  }
+
+  /* Remove top padding from first section/hero inside main on mobile */
+  body:not(.albamen-page) main > section:first-child,
+  body:not(.albamen-page) main > .hero:first-child {
+    padding-top: 16px !important;
+  }
+}
+
 /* #alienMenu — see dropdown-optimized.css */
 /* ================================================================
    CART BADGE — clean counter on cart icon
