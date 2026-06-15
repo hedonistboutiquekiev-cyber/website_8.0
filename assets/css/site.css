@@ -125,6 +125,7 @@ body{
   body {
     background: #020617 url('/assets/images/space-bg11.jpg') center top / cover no-repeat !important;
     background-attachment: fixed !important;
+}
 
 /* Fix for dropdown options visibility on dark themes */
 select, select option {
@@ -3580,7 +3581,6 @@ body:has(model-viewer) .container model-viewer {
   width: 100%;
   max-width: 380px;
 }
-
 .mv-add-cart-btn:hover  { background: #22d3ff; transform: translateY(-2px); box-shadow: 0 6px 30px rgba(0,194,255,0.5); }
 .mv-add-cart-btn:active { transform: scale(0.98); }
 .mv-add-cart-btn svg { width: 22px; height: 22px; stroke: currentColor; fill: none; stroke-width: 2.2; flex-shrink: 0; }
@@ -3591,6 +3591,3 @@ body:has(model-viewer) .container model-viewer {
   font-family: 'Inter', system-ui, sans-serif;
 }
 }
-
-}
-
