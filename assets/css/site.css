@@ -125,7 +125,12 @@ body{
   body {
     background: #020617 url('/assets/images/space-bg11.jpg') center top / cover no-repeat !important;
     background-attachment: fixed !important;
-}
+  }        
+
+  .space-bg {
+    background: #020617 url('/assets/images/space-bg11.jpg') center top / cover fixed no-repeat !important;
+  }
+}  
 
 /* Fix for dropdown options visibility on dark themes */
 select, select option {
@@ -3589,5 +3594,4 @@ body:has(model-viewer) .container model-viewer {
   font-size: 13px;
   color: rgba(255,255,255,0.5);
   font-family: 'Inter', system-ui, sans-serif;
-}
 }
