@@ -58,7 +58,7 @@
     div.innerHTML = `
       <div class="loader-card">
         <div class="loading-logo">
-          <img src="/assets/images/albaspace.jpg" alt="Alba Space" />
+          <img src="/assets/images/albaspace.png" alt="Alba Space" />
         </div>
 
         <div class="loader-orb"><div class="orb-ring"></div><div class="orb-core"><img src="/assets/images/AlbaLogo.png" alt="" /></div></div>
