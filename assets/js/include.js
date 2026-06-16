@@ -1328,3 +1328,11 @@ function getAlbamenIdentity() {
     age: localStorage.getItem('albamen_user_age') || null,
   };
 }
+
+// ── Text Toggle ──────────────────────────────────
+const textToggleScript = document.createElement('script');
+textToggleScript.src = '/assets/js/text-toggle.js';
+textToggleScript.defer = true;
+document.head.appendChild(textToggleScript);
+
+
