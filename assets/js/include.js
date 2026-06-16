@@ -1031,7 +1031,7 @@ function ensureModelViewerLoaded() {
         console.debug('[model-viewer] model-viewer not registered after timeout, trying fallback...');
         tryFallback();
       }
-    }, 10000); // 10 second timeout
+    }, 10000); //   10 second timeout
   };
 
   if (!existingLocalScript) {
