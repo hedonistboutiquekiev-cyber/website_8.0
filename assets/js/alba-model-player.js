@@ -51,6 +51,52 @@
   font-size: 11px; font-weight: 700;
   letter-spacing: .12em; text-transform: uppercase;
   color: #38bdf8; margin-bottom: 9px; opacity: .85;
+  padding-right: 100px;
+}
+#ampLabel {
+  overflow: hidden; text-overflow: ellipsis; white-space: nowrap;
+}
+/* громкость — правый верхний угол контейнера */
+.amp-volume {
+  position: absolute;
+  top: 12px; right: 14px;
+  display: flex; align-items: center; gap: 6px;
+  z-index: 2;
+}
+.amp-vol-btn {
+  width: 22px; height: 22px; flex-shrink: 0;
+  border: none; background: transparent; padding: 0;
+  color: #38bdf8; opacity: .8; cursor: pointer;
+  display: flex; align-items: center; justify-content: center;
+  transition: opacity .15s, color .15s;
+}
+.amp-vol-btn:hover { opacity: 1; }
+.amp-vol-btn svg { width: 16px; height: 16px; }
+.amp-vol-slider {
+  -webkit-appearance: none; appearance: none;
+  width: 64px; height: 3px;
+  background: rgba(255,255,255,.14);
+  border-radius: 99px; outline: none; cursor: pointer;
+}
+.amp-vol-slider::-webkit-slider-thumb {
+  -webkit-appearance: none;
+  width: 11px; height: 11px; border-radius: 50%;
+  background: #38bdf8;
+  box-shadow: 0 0 6px rgba(56,189,248,.65);
+  cursor: pointer; margin-top: -1px;
+}
+.amp-vol-slider::-moz-range-thumb {
+  width: 11px; height: 11px; border: none; border-radius: 50%;
+  background: #38bdf8;
+  box-shadow: 0 0 6px rgba(56,189,248,.65);
+  cursor: pointer;
+}
+.amp-vol-slider::-moz-range-progress {
+  background: #38bdf8; height: 3px; border-radius: 99px;
+}
+@media (max-width: 480px) {
+  .amp-track { padding-right: 78px; }
+  .amp-vol-slider { width: 42px; }
 }
 .amp-dot {
   width: 6px; height: 6px; border-radius: 50%;
@@ -185,6 +231,13 @@
   function buildHTML(trackName) {
     return `
 <div id="albaModelPlayer">
+  <div class="amp-volume" id="ampVolume">
+    <button class="amp-vol-btn" id="ampVolBtn" title="Sesi kapat / aç" aria-label="Ses seviyesi">
+      <svg id="ampIcoVolOn" viewBox="0 0 24 24" fill="currentColor"><path d="M3 9v6h4l5 5V4L7 9H3z"/><path d="M16.5 12c0-1.77-1-3.29-2.5-4.03v8.05c1.5-.74 2.5-2.26 2.5-4.02z"/><path d="M14 3.23v2.06c2.89.86 5 3.54 5 6.71s-2.11 5.85-5 6.71v2.06c4.01-.91 7-4.49 7-8.77s-2.99-7.86-7-8.77z"/></svg>
+      <svg id="ampIcoVolOff" viewBox="0 0 24 24" fill="currentColor" style="display:none"><path d="M3 9v6h4l5 5V4L7 9H3z"/><path d="M19 12l2.5-2.5-1.41-1.41L17.59 10.5 15.09 8 13.68 9.41 16.18 11.9l-2.5 2.5 1.41 1.41L17.59 13.32l2.5 2.5L21.5 14.41 19 11.91z"/></svg>
+    </button>
+    <input type="range" id="ampVolSlider" class="amp-vol-slider" min="0" max="100" value="100" aria-label="Ses seviyesi" />
+  </div>
   <div class="amp-track">
     <span class="amp-dot"></span>
     <span id="ampLabel">${trackName}</span>
@@ -291,11 +344,58 @@
       cur:    document.getElementById('ampCur'),
       dur:    document.getElementById('ampDur'),
       status: document.getElementById('ampStatus'),
+      volSlider: document.getElementById('ampVolSlider'),
+      volBtn:    document.getElementById('ampVolBtn'),
+      iVolOn:    document.getElementById('ampIcoVolOn'),
+      iVolOff:   document.getElementById('ampIcoVolOff'),
     };
 
     let audio     = null;
     let loading   = false;
     let ttsActive = false;
+
+    // ── Громкость ───────────────────────────────────────────────
+    const VOL_KEY = 'albaPlayerVolume';
+    let volume = 1;
+    let lastVolume = 1;
+    try {
+      const saved = parseFloat(localStorage.getItem(VOL_KEY));
+      if (!isNaN(saved) && saved >= 0 && saved <= 1) volume = saved;
+    } catch (e) { /* localStorage недоступен */ }
+    lastVolume = volume || 1;
+
+    function updateVolUI() {
+      if (el.volSlider) el.volSlider.value = String(Math.round(volume * 100));
+      if (el.iVolOn && el.iVolOff) {
+        const muted = volume <= 0;
+        el.iVolOn.style.display  = muted ? 'none' : '';
+        el.iVolOff.style.display = muted ? '' : 'none';
+      }
+    }
+
+    function setVolume(v) {
+      volume = Math.max(0, Math.min(1, v));
+      if (audio) audio.volume = volume;
+      try { localStorage.setItem(VOL_KEY, String(volume)); } catch (e) {}
+      updateVolUI();
+    }
+
+    if (el.volSlider) {
+      el.volSlider.addEventListener('input', () => {
+        setVolume(parseFloat(el.volSlider.value) / 100);
+      });
+    }
+    if (el.volBtn) {
+      el.volBtn.addEventListener('click', () => {
+        if (volume > 0) {
+          lastVolume = volume;
+          setVolume(0);
+        } else {
+          setVolume(lastVolume || 1);
+        }
+      });
+    }
+    updateVolUI();
 
     // Состояния
     const STATE = {
@@ -339,6 +439,7 @@
 
       audio = new Audio(AUDIO_PATH + slug + '.mp3');
       audio.preload = 'auto';
+      audio.volume = volume;
 
       audio.addEventListener('loadedmetadata', () => {
         el.dur.textContent = fmt(audio.duration);
@@ -390,6 +491,7 @@
           const blob = new Blob([buf], { type: 'audio/mpeg' });
           const url  = URL.createObjectURL(blob);
           audio = new Audio(url);
+          audio.volume = volume;
 
           audio.addEventListener('loadedmetadata', () => {
             el.dur.textContent = fmt(audio.duration);
@@ -432,6 +534,7 @@
       utt.lang   = lang === 'ru' ? 'ru-RU' : lang === 'en' ? 'en-US' : 'tr-TR';
       utt.pitch  = 0.70;
       utt.rate   = 0.88;
+      utt.volume = volume;
       utt.onend  = () => { ttsActive = false; applyState('stopped'); };
       utt.onerror= () => { ttsActive = false; applyState('error'); };
       window.speechSynthesis.speak(utt);

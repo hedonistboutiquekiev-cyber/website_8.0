@@ -121,16 +121,21 @@ body{
   }
 }
 
+/* Restore fixed background on larger screens (desktop/tablet) */
 @media (min-width: 768px) {
-  body {
-    background: #020617 url('/assets/images/space-bg11.jpg') center top / cover no-repeat !important;
-    background-attachment: fixed !important;
-  }        
 
-  .space-bg {
-    background: #020617 url('/assets/images/space-bg11.jpg') center top / cover fixed no-repeat !important;
+  body {
+
+    background: #020617 url('/assets/images/space-bg11.jpg') center/cover no-repeat !important;
+
   }
-}  
+
+  /* ПК версия: используем space-bg11.jpg и для классов с фоном */
+  .space-bg {
+    background: #020617 url('/assets/images/space-bg11.jpg') center/cover fixed no-repeat !important;
+  }
+
+}
 
 /* Fix for dropdown options visibility on dark themes */
 select, select option {
@@ -2223,23 +2228,15 @@ select, select option {
   display: flex;
   align-items: center;
   justify-content: center;
-  gap: 10px;
   margin-bottom: 18px;
 }
 
 .model-loading-overlay .loading-logo img {
-  width: 180px;
+  width: 200px;
+  max-width: 80%;
   height: auto;
   display: block;
-  margin: 0 auto 8px;
-}
-
-.model-loading-overlay .loading-logo span {
-  font-size: 15px;
-  letter-spacing: 0.16em;
-  text-transform: uppercase;
-  color: #e5e7eb;
-  opacity: 0.9;
+  margin: 0 auto;
 }
 
 .model-loading-overlay .loader-orb {
@@ -2263,6 +2260,16 @@ select, select option {
   inset: 18px;
   border-radius: 50%;
   box-shadow: 0 0 24px rgba(56, 189, 248, 0.9), 0 0 60px rgba(0, 0, 0, 1);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  overflow: hidden;
+  background: rgba(2,6,23,0.9);
+}
+.model-loading-overlay .orb-core img {
+  width: 72%;
+  height: 72%;
+  object-fit: contain;
 }
 
 .model-loading-overlay .loading-text {
