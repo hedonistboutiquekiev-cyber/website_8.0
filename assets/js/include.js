@@ -1335,4 +1335,12 @@ textToggleScript.src = '/assets/js/text-toggle.js';
 textToggleScript.defer = true;
 document.head.appendChild(textToggleScript);
 
-
+// ── Scanner Button (AR-кнопка на всех страницах с model-viewer) ──
+if (document.querySelector('model-viewer') ||
+    document.querySelector('script[data-model-preloader]') ||
+    document.querySelector('script[data-alba-model-player]')) {
+  const scannerBtnScript = document.createElement('script');
+  scannerBtnScript.src = '/assets/js/scanner-button.js';
+  scannerBtnScript.defer = true;
+  document.head.appendChild(scannerBtnScript);
+}

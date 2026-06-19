@@ -1,0 +1,577 @@
+<!DOCTYPE html>
+<html lang="tr">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
+  <title>Alba Space — AR Tarayıcı</title>
+
+  <!-- A-Frame + MindAR -->
+  <script src="https://aframe.io/releases/1.4.2/aframe.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/mind-ar@1.2.2/dist/mindar-image-aframe.prod.js"></script>
+
+  <style>
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+
+    body {
+      background: #020617;
+      font-family: system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+      color: #fff;
+      overflow: hidden;
+      -webkit-tap-highlight-color: transparent;
+    }
+
+    /* ── A-Frame scene fullscreen ── */
+    .a-canvas { background: transparent !important; }
+    a-scene { position: fixed; inset: 0; z-index: 0; }
+
+    /* ── TOP BAR ── */
+    #top-bar {
+      position: fixed;
+      top: 0; left: 0; right: 0;
+      z-index: 100;
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      padding: 12px 16px;
+      background: linear-gradient(to bottom, rgba(2,6,23,0.9) 60%, transparent);
+      backdrop-filter: blur(4px);
+    }
+    #back-btn {
+      display: flex;
+      align-items: center;
+      gap: 6px;
+      padding: 8px 14px;
+      border-radius: 99px;
+      background: rgba(0,194,255,0.12);
+      border: 1px solid rgba(0,194,255,0.35);
+      color: #00c2ff;
+      text-decoration: none;
+      font-size: 13px;
+      font-weight: 600;
+      letter-spacing: 0.05em;
+      transition: background 0.15s;
+      flex-shrink: 0;
+    }
+    #back-btn:hover { background: rgba(0,194,255,0.22); }
+    #top-title {
+      font-size: 14px;
+      font-weight: 700;
+      letter-spacing: 0.1em;
+      text-transform: uppercase;
+      color: #e5e7eb;
+      opacity: 0.9;
+    }
+    #top-logo {
+      margin-left: auto;
+      height: 28px;
+      opacity: 0.85;
+    }
+
+    /* ── STATUS BADGE ── */
+    #status-badge {
+      position: fixed;
+      top: 68px;
+      left: 50%;
+      transform: translateX(-50%);
+      z-index: 100;
+      padding: 8px 18px;
+      border-radius: 99px;
+      background: rgba(2,6,23,0.75);
+      border: 1px solid rgba(148,163,184,0.3);
+      font-size: 13px;
+      color: #cbd5e1;
+      backdrop-filter: blur(6px);
+      white-space: nowrap;
+      transition: all 0.3s ease;
+      text-align: center;
+    }
+    #status-badge.found {
+      background: rgba(0,80,40,0.85);
+      border-color: rgba(0,255,150,0.5);
+      color: #6ee7b7;
+    }
+
+    /* ── MODEL LABEL (shown when target found) ── */
+    #model-label {
+      position: fixed;
+      bottom: 140px;
+      left: 50%;
+      transform: translateX(-50%);
+      z-index: 100;
+      padding: 12px 24px;
+      border-radius: 16px;
+      background: rgba(2,6,23,0.88);
+      border: 1px solid rgba(0,194,255,0.45);
+      box-shadow: 0 0 30px rgba(0,194,255,0.2);
+      text-align: center;
+      max-width: 85vw;
+      display: none;
+      backdrop-filter: blur(8px);
+    }
+    #model-label-name {
+      font-size: 18px;
+      font-weight: 700;
+      color: #38bdf8;
+      letter-spacing: 0.06em;
+      text-transform: uppercase;
+    }
+    #model-label-sub {
+      font-size: 11px;
+      color: #94a3b8;
+      margin-top: 3px;
+      letter-spacing: 0.08em;
+    }
+
+    /* ── LOADING OVERLAY ── */
+    #loading-overlay {
+      position: fixed;
+      inset: 0;
+      z-index: 200;
+      background: #020617;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      gap: 20px;
+      transition: opacity 0.5s ease;
+    }
+    #loading-overlay.hidden {
+      opacity: 0;
+      pointer-events: none;
+    }
+    #loading-overlay img {
+      width: 80px;
+      opacity: 0.9;
+      animation: pulse 2s ease-in-out infinite;
+    }
+    @keyframes pulse {
+      0%,100% { transform: scale(1); opacity: 0.8; }
+      50% { transform: scale(1.08); opacity: 1; }
+    }
+    .spinner {
+      width: 48px; height: 48px;
+      border: 3px solid rgba(0,194,255,0.15);
+      border-top-color: #00c2ff;
+      border-right-color: rgba(56,189,248,0.8);
+      border-radius: 50%;
+      animation: spin 1s linear infinite;
+    }
+    @keyframes spin { to { transform: rotate(360deg); } }
+    #loading-text { font-size: 14px; color: #94a3b8; letter-spacing: 0.08em; }
+    #loading-sub { font-size: 11px; color: #475569; text-align: center; max-width: 260px; line-height: 1.5; }
+
+    /* ── BOTTOM CONTROLS ── */
+    #bottom-bar {
+      position: fixed;
+      bottom: 0; left: 0; right: 0;
+      z-index: 100;
+      padding: 16px 20px calc(16px + env(safe-area-inset-bottom));
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 12px;
+      background: linear-gradient(to top, rgba(2,6,23,0.9) 60%, transparent);
+    }
+    .ctrl-btn {
+      display: flex;
+      align-items: center;
+      gap: 6px;
+      padding: 10px 18px;
+      border-radius: 99px;
+      border: 1px solid rgba(148,163,184,0.3);
+      background: rgba(15,23,42,0.8);
+      color: #e5e7eb;
+      font-size: 13px;
+      font-weight: 600;
+      cursor: pointer;
+      backdrop-filter: blur(6px);
+      transition: all 0.15s;
+    }
+    .ctrl-btn:hover, .ctrl-btn:active {
+      background: rgba(0,194,255,0.15);
+      border-color: rgba(0,194,255,0.5);
+      color: #38bdf8;
+    }
+    .ctrl-btn svg { width: 16px; height: 16px; }
+
+    /* ── TARGETS DRAWER ── */
+    #targets-drawer {
+      position: fixed;
+      bottom: 0; left: 0; right: 0;
+      z-index: 150;
+      max-height: 65vh;
+      background: rgba(2,6,23,0.97);
+      border-top: 1px solid rgba(56,189,248,0.2);
+      border-radius: 20px 20px 0 0;
+      backdrop-filter: blur(12px);
+      transform: translateY(100%);
+      transition: transform 0.35s cubic-bezier(0.32, 0.72, 0, 1);
+      display: flex;
+      flex-direction: column;
+    }
+    #targets-drawer.open { transform: translateY(0); }
+    #drawer-handle {
+      width: 36px; height: 4px;
+      border-radius: 99px;
+      background: rgba(148,163,184,0.4);
+      margin: 14px auto 0;
+      flex-shrink: 0;
+    }
+    #drawer-title {
+      padding: 12px 20px 8px;
+      font-size: 13px;
+      font-weight: 700;
+      letter-spacing: 0.08em;
+      text-transform: uppercase;
+      color: #94a3b8;
+      flex-shrink: 0;
+    }
+    #targets-list {
+      overflow-y: auto;
+      padding: 4px 16px 24px;
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(130px, 1fr));
+      gap: 8px;
+    }
+    .target-chip {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 6px;
+      padding: 10px 8px;
+      border-radius: 12px;
+      background: rgba(15,23,42,0.6);
+      border: 1px solid rgba(148,163,184,0.15);
+      cursor: pointer;
+      transition: all 0.15s;
+      text-align: center;
+    }
+    .target-chip:hover {
+      border-color: rgba(0,194,255,0.4);
+      background: rgba(0,194,255,0.08);
+    }
+    .target-chip img {
+      width: 56px;
+      height: 56px;
+      object-fit: contain;
+      border-radius: 8px;
+      background: rgba(0,0,0,0.3);
+    }
+    .target-chip span {
+      font-size: 10px;
+      color: #94a3b8;
+      letter-spacing: 0.04em;
+      line-height: 1.3;
+    }
+    #drawer-overlay {
+      position: fixed;
+      inset: 0;
+      z-index: 140;
+      background: rgba(0,0,0,0.5);
+      display: none;
+    }
+    #drawer-overlay.open { display: block; }
+
+    /* ── NO .mind FILE ERROR ── */
+    #no-mind-error {
+      position: fixed;
+      inset: 0;
+      z-index: 300;
+      background: #020617;
+      display: none;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      gap: 16px;
+      padding: 32px;
+      text-align: center;
+    }
+    #no-mind-error.show { display: flex; }
+    #no-mind-error h2 { color: #f87171; font-size: 20px; }
+    #no-mind-error p { color: #94a3b8; font-size: 14px; line-height: 1.6; max-width: 360px; }
+    #no-mind-error a {
+      padding: 10px 20px;
+      background: rgba(0,194,255,0.15);
+      border: 1px solid rgba(0,194,255,0.4);
+      border-radius: 99px;
+      color: #38bdf8;
+      text-decoration: none;
+      font-size: 13px;
+      font-weight: 600;
+    }
+  </style>
+</head>
+<body>
+
+<!-- Loading overlay -->
+<div id="loading-overlay">
+  <img src="/assets/images/AlbaLogo.png" alt="Alba Space" />
+  <div class="spinner"></div>
+  <p id="loading-text">AR Tarayıcı Yükleniyor...</p>
+  <p id="loading-sub">Kamera izni gerekebilir.<br>Lütfen izin verin.</p>
+</div>
+
+<!-- No targets.mind error -->
+<div id="no-mind-error">
+  <h2>⚠️ targets.mind bulunamadı</h2>
+  <p>AR tarayıcısı için hedef dosyası derlenmemiş.<br>
+     <code>scanner/compile.html</code> sayfasını açıp hedef dosyasını oluşturun,<br>
+     ardından <code>scanner/targets.mind</code> olarak kaydedin.</p>
+  <a href="compile.html">📋 Derleme Aracını Aç</a>
+  <a href="javascript:history.back()" style="margin-top:8px;">← Geri Dön</a>
+</div>
+
+<!-- Top bar -->
+<div id="top-bar">
+  <a id="back-btn" href="javascript:history.back()">
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="14" height="14"><path d="M19 12H5M12 5l-7 7 7 7"/></svg>
+    Geri
+  </a>
+  <span id="top-title">AR Tarayıcı</span>
+  <img id="top-logo" src="/assets/images/albaspace.jpg" alt="Alba Space" />
+</div>
+
+<!-- Status badge -->
+<div id="status-badge">📷 Hedefi kameraya tutun...</div>
+
+<!-- Model label when target found -->
+<div id="model-label">
+  <div id="model-label-name">—</div>
+  <div id="model-label-sub">Hedef bulundu ✓</div>
+</div>
+
+<!-- Bottom controls -->
+<div id="bottom-bar">
+  <button class="ctrl-btn" id="list-btn" onclick="openDrawer()">
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2"/><rect x="9" y="3" width="6" height="4" rx="1"/><path d="M9 12h6M9 16h4"/></svg>
+    Tüm Hedefler
+  </button>
+  <button class="ctrl-btn" id="compile-btn" onclick="window.location='compile.html'">
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="3"/><path d="M12 1v3M12 20v3M4.22 4.22l2.12 2.12M17.66 17.66l2.12 2.12M1 12h3M20 12h3M4.22 19.78l2.12-2.12M17.66 6.34l2.12-2.12"/></svg>
+    Mind Dosyası Derle
+  </button>
+</div>
+
+<!-- Targets drawer overlay -->
+<div id="drawer-overlay" onclick="closeDrawer()"></div>
+
+<!-- Targets drawer -->
+<div id="targets-drawer">
+  <div id="drawer-handle"></div>
+  <div id="drawer-title">Tüm AR Hedefleri (41)</div>
+  <div id="targets-list"></div>
+</div>
+
+<!-- A-Frame scene (built dynamically to avoid loading all models upfront) -->
+<div id="aframe-container"></div>
+
+<script>
+// ─────────────────────────────────────────────────────────────────────────────
+// MODEL TARGETS MANIFEST
+// ORDER MUST MATCH compilation order in compile.html / targets.mind
+// ─────────────────────────────────────────────────────────────────────────────
+const MODEL_TARGETS = [
+  { index: 0,  slug: 'curiosity',            name: 'Curiosity',                    model: '/assets/models/curiosity.glb',            img: 'curiosity.png',            scale: '0.3 0.3 0.3', rot: '0 0 0' },
+  { index: 1,  slug: 'earth',                name: 'Dünya / Earth',                model: '/assets/models/earth.glb',                img: 'earth.png',                scale: '0.4 0.4 0.4', rot: '0 0 0' },
+  { index: 2,  slug: 'exomars',              name: 'ExoMars',                      model: '/assets/models/exomars.glb',              img: 'exomars.png',              scale: '0.3 0.3 0.3', rot: '0 0 0' },
+  { index: 3,  slug: 'gokturk-1',            name: 'Göktürk-1',                    model: '/assets/models/gokturk-1.glb',            img: 'gokturk-1.png',            scale: '0.3 0.3 0.3', rot: '0 0 0' },
+  { index: 4,  slug: 'gokturk-2',            name: 'Göktürk-2',                    model: '/assets/models/gokturk-2.glb',            img: 'gokturk-2.png',            scale: '0.3 0.3 0.3', rot: '0 0 0' },
+  { index: 5,  slug: 'hubble',               name: 'Hubble Teleskobu',             model: '/assets/models/hubble.glb',               img: 'hubble.png',               scale: '0.3 0.3 0.3', rot: '0 0 0' },
+  { index: 6,  slug: 'hubble',               name: 'Hubble Teleskobu',             model: '/assets/models/hubble.glb',               img: 'hubble1.png',              scale: '0.3 0.3 0.3', rot: '0 0 0' },
+  { index: 7,  slug: 'imece',                name: 'İMECE',                        model: '/assets/models/imece.glb',                img: 'Imece2.png',               scale: '0.3 0.3 0.3', rot: '0 0 0' },
+  { index: 8,  slug: 'ingenuity',            name: 'Ingenuity',                    model: '/assets/models/ingenuity.glb',            img: 'ingenuity.png',            scale: '0.3 0.3 0.3', rot: '0 0 0' },
+  { index: 9,  slug: 'iss',                  name: 'Uzay İstasyonu (ISS)',          model: '/assets/models/iss.glb',                  img: 'iss.png',                  scale: '0.2 0.2 0.2', rot: '0 0 0' },
+  { index: 10, slug: 'jameswebb',            name: 'James Webb Teleskobu',         model: '/assets/models/jameswebb.glb',            img: 'jameswebb.png',            scale: '0.25 0.25 0.25', rot: '0 0 0' },
+  { index: 11, slug: 'jupiter',              name: 'Jüpiter',                      model: '/assets/models/jupiter.glb',              img: 'jupiter.png',              scale: '0.4 0.4 0.4', rot: '0 0 0' },
+  { index: 12, slug: 'kepler',               name: 'Kepler Teleskobu',             model: '/assets/models/kepler.glb',               img: 'kepler.png',               scale: '0.3 0.3 0.3', rot: '0 0 0' },
+  { index: 13, slug: 'lagari',               name: 'Lagari Hasan Çelebi',          model: '/assets/models/lagari.glb',               img: 'lagari.png',               scale: '0.35 0.35 0.35', rot: '0 0 0' },
+  { index: 14, slug: 'mars',                 name: 'Mars',                         model: '/assets/models/mars.glb',                 img: 'mars.png',                 scale: '0.4 0.4 0.4', rot: '0 0 0' },
+  { index: 15, slug: 'marsodyssey',          name: 'Mars Odyssey',                 model: '/assets/models/marsodyssey.glb',          img: 'marsodyssey.png',          scale: '0.3 0.3 0.3', rot: '0 0 0' },
+  { index: 16, slug: 'marsreconnaissance',   name: 'Mars Reconnaissance Orbiter',  model: '/assets/models/marsreconnaissance.glb',   img: 'marsreconnaissance.png',   scale: '0.3 0.3 0.3', rot: '0 0 0' },
+  { index: 17, slug: 'mercury',              name: 'Merkür',                       model: '/assets/models/mercury.glb',              img: 'mercury.png',              scale: '0.4 0.4 0.4', rot: '0 0 0' },
+  { index: 18, slug: 'neptune',              name: 'Neptün',                       model: '/assets/models/neptune.glb',              img: 'neptune.png',              scale: '0.4 0.4 0.4', rot: '0 0 0' },
+  { index: 19, slug: 'opportunity',          name: 'Opportunity Rover',            model: '/assets/models/opportunity.glb',          img: 'opportunity.png',          scale: '0.3 0.3 0.3', rot: '0 0 0' },
+  { index: 20, slug: 'perseverance',         name: 'Perseverance Rover',           model: '/assets/models/perseverance.glb',         img: 'perseverance.png',         scale: '0.3 0.3 0.3', rot: '0 0 0' },
+  { index: 21, slug: 'rasat',                name: 'RASAT',                        model: '/assets/models/rasat.glb',                img: 'rasat.png',                scale: '0.3 0.3 0.3', rot: '0 0 0' },
+  { index: 22, slug: 'saturn',               name: 'Satürn',                       model: '/assets/models/saturn.glb',               img: 'saturn.png',               scale: '0.4 0.4 0.4', rot: '0 0 0' },
+  { index: 23, slug: 'sojourner',            name: 'Sojourner Rover',              model: '/assets/models/sojourner.glb',            img: 'sojourner.png',            scale: '0.3 0.3 0.3', rot: '0 0 0' },
+  { index: 24, slug: 'spirit',               name: 'Spirit Rover',                 model: '/assets/models/zaglushka.glb',            img: 'spirit.png',               scale: '0.3 0.3 0.3', rot: '0 0 0' },
+  { index: 25, slug: 'sputnik',              name: 'Sputnik',                      model: '/assets/models/sputnik.glb',              img: 'sputnik.png',              scale: '0.3 0.3 0.3', rot: '0 0 0' },
+  { index: 26, slug: 'turksat-1a',           name: 'Türksat 1A',                   model: '/assets/models/turksat-1a.glb',           img: 'turksat-1A.png',           scale: '0.3 0.3 0.3', rot: '0 0 0' },
+  { index: 27, slug: 'turksat-1b',           name: 'Türksat 1B',                   model: '/assets/models/turksat-1b.glb',           img: 'turksat-1B.png',           scale: '0.3 0.3 0.3', rot: '0 0 0' },
+  { index: 28, slug: 'turksat-1c',           name: 'Türksat 1C',                   model: '/assets/models/zaglushka.glb',            img: 'turksat-1C.png',           scale: '0.3 0.3 0.3', rot: '0 0 0' },
+  { index: 29, slug: 'turksat-2a',           name: 'Türksat 2A',                   model: '/assets/models/turksat-2a.glb',           img: 'turksat-2A.png',           scale: '0.3 0.3 0.3', rot: '0 0 0' },
+  { index: 30, slug: 'turksat-3a',           name: 'Türksat 3A',                   model: '/assets/models/turksat-3a.glb',           img: 'turksat-3A.png',           scale: '0.3 0.3 0.3', rot: '0 0 0' },
+  { index: 31, slug: 'turksat-3b',           name: 'Türksat 3B',                   model: '/assets/models/turksat-3b.glb',           img: 'turksat-3B.png',           scale: '0.3 0.3 0.3', rot: '0 0 0' },
+  { index: 32, slug: 'turksat-4a',           name: 'Türksat 4A',                   model: '/assets/models/turksat-4a.glb',           img: 'turksat-4A.png',           scale: '0.3 0.3 0.3', rot: '0 0 0' },
+  { index: 33, slug: 'turksat-5a',           name: 'Türksat 5A',                   model: '/assets/models/turksat-5a.glb',           img: 'turksat-5A.png',           scale: '0.3 0.3 0.3', rot: '0 0 0' },
+  { index: 34, slug: 'turksat-5b',           name: 'Türksat 5B',                   model: '/assets/models/turksat-5b.glb',           img: 'turksat-5B.png',           scale: '0.3 0.3 0.3', rot: '0 0 0' },
+  { index: 35, slug: 'turksat-6a',           name: 'Türksat 6A',                   model: '/assets/models/turksat-6a.glb',           img: 'turksat-6A.png',           scale: '0.3 0.3 0.3', rot: '0 0 0' },
+  { index: 36, slug: 'uranus',               name: 'Uranüs',                       model: '/assets/models/uranus.glb',               img: 'uranus.png',               scale: '0.4 0.4 0.4', rot: '0 0 0' },
+  { index: 37, slug: 'venus',                name: 'Venüs',                        model: '/assets/models/venus.glb',                img: 'venus.png',                scale: '0.4 0.4 0.4', rot: '0 0 0' },
+  { index: 38, slug: 'voyager1',             name: 'Voyager 1',                    model: '/assets/models/voyager1.glb',             img: 'voyager1.png',             scale: '0.3 0.3 0.3', rot: '0 0 0' },
+  { index: 39, slug: 'voyager2',             name: 'Voyager 2',                    model: '/assets/models/voyager2.glb',             img: 'voyager2.png',             scale: '0.3 0.3 0.3', rot: '0 0 0' },
+  { index: 40, slug: 'zhurong',              name: 'Zhurong Rover',                model: '/assets/models/zhurong.glb',              img: 'zhurong.png',              scale: '0.3 0.3 0.3', rot: '0 0 0' },
+];
+
+// ─────────────────────────────────────────────────────────────────────────────
+// UI helpers
+// ─────────────────────────────────────────────────────────────────────────────
+const statusEl    = document.getElementById('status-badge');
+const labelEl     = document.getElementById('model-label');
+const labelName   = document.getElementById('model-label-name');
+const loadingEl   = document.getElementById('loading-overlay');
+const noMindEl    = document.getElementById('no-mind-error');
+
+function setStatus(text, found = false) {
+  statusEl.textContent = text;
+  statusEl.classList.toggle('found', found);
+}
+
+function showLabel(name) {
+  labelName.textContent = name;
+  labelEl.style.display = 'block';
+}
+
+function hideLabel() {
+  labelEl.style.display = 'none';
+}
+
+function hideLoading() {
+  loadingEl.classList.add('hidden');
+  setTimeout(() => { loadingEl.style.display = 'none'; }, 600);
+}
+
+// ─────────────────────────────────────────────────────────────────────────────
+// Populate targets drawer
+// ─────────────────────────────────────────────────────────────────────────────
+const targetsList = document.getElementById('targets-list');
+// Deduplicate by slug for display
+const unique = [];
+const seen = new Set();
+MODEL_TARGETS.forEach(t => {
+  if (!seen.has(t.slug)) {
+    seen.add(t.slug);
+    unique.push(t);
+  }
+});
+unique.forEach(t => {
+  const chip = document.createElement('div');
+  chip.className = 'target-chip';
+  chip.innerHTML = `
+    <img src="/assets/models-pictures/${t.img}" alt="${t.name}" onerror="this.style.opacity='0.3'" />
+    <span>${t.name}</span>`;
+  targetsList.appendChild(chip);
+});
+
+function openDrawer()  {
+  document.getElementById('targets-drawer').classList.add('open');
+  document.getElementById('drawer-overlay').classList.add('open');
+}
+function closeDrawer() {
+  document.getElementById('targets-drawer').classList.remove('open');
+  document.getElementById('drawer-overlay').classList.remove('open');
+}
+
+// ─────────────────────────────────────────────────────────────────────────────
+// Check if targets.mind exists, then build A-Frame scene
+// ─────────────────────────────────────────────────────────────────────────────
+const MIND_SRC = '/scanner/targets.mind';
+
+fetch(MIND_SRC, { method: 'HEAD' })
+  .then(r => {
+    if (!r.ok) throw new Error('not found');
+    buildScene();
+  })
+  .catch(() => {
+    hideLoading();
+    noMindEl.classList.add('show');
+  });
+
+// ─────────────────────────────────────────────────────────────────────────────
+// Build A-Frame scene dynamically
+// ─────────────────────────────────────────────────────────────────────────────
+function buildScene() {
+  // Build assets (empty, models loaded lazily)
+  let assetsHTML = '<a-assets timeout="30000">';
+  MODEL_TARGETS.forEach(t => {
+    assetsHTML += `<a-asset-item id="m-${t.index}" src="${t.model}" response-type="arraybuffer"></a-asset-item>`;
+  });
+  assetsHTML += '</a-assets>';
+
+  // Build image target entities (empty anchors)
+  let entitiesHTML = '<a-camera position="0 0 0" look-controls="enabled: false"></a-camera>';
+  entitiesHTML += '<a-entity light="type: ambient; intensity: 1.2"></a-entity>';
+  entitiesHTML += '<a-entity light="type: directional; intensity: 1.0" position="1 2 1"></a-entity>';
+
+  MODEL_TARGETS.forEach(t => {
+    entitiesHTML += `
+      <a-entity
+        id="anchor-${t.index}"
+        mindar-image-target="targetIndex: ${t.index}"
+        data-slug="${t.slug}"
+        data-name="${t.name}"
+        data-model="${t.model}"
+        data-scale="${t.scale}">
+      </a-entity>`;
+  });
+
+  const sceneHTML = `
+    <a-scene
+      id="ar-scene"
+      mindar-image="imageTargetSrc: ${MIND_SRC}; filterMinCF:0.001; filterBeta:0.01; missTolerance:5; warmupTolerance:3;"
+      color-space="sRGB"
+      renderer="colorManagement: true; physicallyCorrectLights: true; alpha: true"
+      vr-mode-ui="enabled: false"
+      device-orientation-permission-ui="enabled: false">
+      ${assetsHTML}
+      ${entitiesHTML}
+    </a-scene>`;
+
+  document.getElementById('aframe-container').innerHTML = sceneHTML;
+
+  // Wait for scene to be ready, then attach events
+  const scene = document.querySelector('a-scene');
+
+  scene.addEventListener('loaded', () => {
+    setStatus('📷 Hedefi kameraya tutun...');
+    hideLoading();
+  });
+
+  scene.addEventListener('arError', () => {
+    hideLoading();
+    setStatus('❌ Kamera erişim hatası');
+  });
+
+  // Attach events to each anchor
+  MODEL_TARGETS.forEach(t => {
+    const anchor = document.getElementById(`anchor-${t.index}`);
+    if (!anchor) return;
+
+    anchor.addEventListener('targetFound', () => {
+      setStatus(`✅ ${t.name} bulundu!`, true);
+      showLabel(t.name);
+
+      // Lazy load: only add model if not already added
+      if (!anchor.querySelector('a-gltf-model')) {
+        const modelEl = document.createElement('a-gltf-model');
+        modelEl.setAttribute('src', `#m-${t.index}`);
+        modelEl.setAttribute('scale', t.scale);
+        modelEl.setAttribute('rotation', t.rot);
+        modelEl.setAttribute('position', '0 0 0');
+        modelEl.setAttribute('animation-mixer', 'clip: *; loop: repeat');
+        anchor.appendChild(modelEl);
+      }
+      anchor.setAttribute('visible', 'true');
+    });
+
+    anchor.addEventListener('targetLost', () => {
+      setStatus('📷 Hedefi kameraya tutun...');
+      hideLabel();
+      anchor.setAttribute('visible', 'false');
+    });
+  });
+}
+</script>
+</body>
+</html>
