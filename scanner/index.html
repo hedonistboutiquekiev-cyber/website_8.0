@@ -7,9 +7,9 @@
   <meta name="mobile-web-app-capable" content="yes" />
   <title>Alba Space — AR</title>
 
-  <!-- Загружаем скрипты async чтобы не блокировать рендер -->
-  <script async src="https://aframe.io/releases/1.4.2/aframe.min.js"></script>
-  <script async src="https://cdn.jsdelivr.net/npm/mind-ar@1.2.2/dist/mindar-image-aframe.prod.js"></script>
+  <!-- MindAR + A-Frame: синхронно, до построения DOM -->
+  <script src="https://aframe.io/releases/1.4.2/aframe.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/mind-ar@1.2.2/dist/mindar-image-aframe.prod.js"></script>
 
   <style>
     * { box-sizing: border-box; margin: 0; padding: 0; }
@@ -17,38 +17,22 @@
     html, body {
       width: 100%; height: 100%;
       overflow: hidden;
-      background: #020617;
+      /* НЕТ background — MindAR сам рисует камеру в canvas */
       font-family: system-ui, -apple-system, 'Segoe UI', sans-serif;
       color: #fff;
       -webkit-tap-highlight-color: transparent;
       overscroll-behavior: none;
     }
 
-    /* ── A-FRAME FULLSCREEN ── */
-    a-scene {
-      position: fixed !important;
-      top: 0 !important; left: 0 !important;
-      width: 100vw !important; height: 100dvh !important;
-      z-index: 0 !important;
-    }
-    .a-canvas, a-scene canvas {
-      width: 100vw !important; height: 100dvh !important;
-      display: block !important;
-    }
-    #mindar-video, video {
-      position: fixed !important;
-      top: 0 !important; left: 0 !important;
-      width: 100vw !important; height: 100dvh !important;
-      object-fit: cover !important;
-    }
+    /* НЕ трогаем canvas, video, a-scene — MindAR управляет сам */
 
     /* ── TOP BAR ── */
     #top-bar {
       position: fixed; top: 0; left: 0; right: 0;
-      z-index: 100;
+      z-index: 200;
       display: flex; align-items: center; gap: 12px;
       padding: max(12px, env(safe-area-inset-top)) 16px 12px;
-      background: linear-gradient(to bottom, rgba(2,6,23,0.85) 60%, transparent);
+      background: linear-gradient(to bottom, rgba(2,6,23,0.85) 65%, transparent);
       pointer-events: none;
     }
     #back-btn {
@@ -59,7 +43,7 @@
       border: 1px solid rgba(0,194,255,0.35);
       color: #00c2ff; text-decoration: none;
       font-size: 13px; font-weight: 600;
-      backdrop-filter: blur(8px);
+      backdrop-filter: blur(8px); -webkit-backdrop-filter: blur(8px);
     }
     #top-logo { margin-left: auto; height: 24px; opacity: 0.9; }
 
@@ -68,16 +52,15 @@
       position: fixed;
       top: max(68px, calc(env(safe-area-inset-top) + 56px));
       left: 50%; transform: translateX(-50%);
-      z-index: 100;
+      z-index: 200;
       padding: 7px 16px; border-radius: 99px;
       background: rgba(2,6,23,0.72);
       border: 1px solid rgba(148,163,184,0.25);
       font-size: 13px; color: #cbd5e1;
-      backdrop-filter: blur(8px);
+      backdrop-filter: blur(8px); -webkit-backdrop-filter: blur(8px);
       white-space: nowrap;
       transition: all 0.3s ease;
       pointer-events: none;
-      display: none; /* Скрыт до открытия камеры */
     }
     #status-badge.found {
       background: rgba(0,60,35,0.88);
@@ -90,53 +73,46 @@
       position: fixed;
       bottom: max(40px, calc(env(safe-area-inset-bottom) + 40px));
       left: 50%; transform: translateX(-50%);
-      z-index: 100;
+      z-index: 200;
       padding: 14px 28px; border-radius: 18px;
       background: rgba(2,6,23,0.85);
       border: 1px solid rgba(0,194,255,0.4);
       box-shadow: 0 0 32px rgba(0,194,255,0.18);
       text-align: center; max-width: 85vw;
       display: none;
-      backdrop-filter: blur(10px);
+      backdrop-filter: blur(10px); -webkit-backdrop-filter: blur(10px);
       pointer-events: none;
     }
     #model-label-name { font-size: 20px; font-weight: 700; color: #38bdf8; letter-spacing: 0.06em; text-transform: uppercase; }
-    #model-label-sub  { font-size: 11px; color: #64748b; margin-top: 3px; letter-spacing: 0.08em; }
+    #model-label-sub  { font-size: 11px; color: #64748b; margin-top: 3px; }
 
     /* ── LOADING OVERLAY (max 10 сек) ── */
     #loading-overlay {
       position: fixed; inset: 0; z-index: 500;
       background: #020617;
       display: flex; flex-direction: column;
-      align-items: center; justify-content: center;
-      gap: 18px;
+      align-items: center; justify-content: center; gap: 18px;
       transition: opacity 0.6s ease;
     }
-    #loading-overlay.fade { opacity: 0; pointer-events: none; }
-    #loading-logo { width: 68px; animation: lgPulse 2s ease-in-out infinite; }
-    @keyframes lgPulse { 0%,100%{transform:scale(1);opacity:.85} 50%{transform:scale(1.07);opacity:1} }
-    #loading-wordmark { height: 22px; opacity: 0.7; margin-bottom: 4px; }
-    .ld-spinner {
+    #loading-overlay.gone { opacity: 0; pointer-events: none; }
+    #ld-logo { width: 68px; animation: lgP 2s ease-in-out infinite; }
+    @keyframes lgP { 0%,100%{transform:scale(1);opacity:.85} 50%{transform:scale(1.07);opacity:1} }
+    #ld-wordmark { height: 22px; opacity: 0.7; }
+    .ld-spin {
       width: 42px; height: 42px;
       border: 3px solid rgba(0,194,255,0.12);
-      border-top-color: #00c2ff;
-      border-right-color: rgba(56,189,248,0.75);
-      border-radius: 50%;
-      animation: spin 0.9s linear infinite;
+      border-top-color: #00c2ff; border-right-color: rgba(56,189,248,0.75);
+      border-radius: 50%; animation: spin 0.9s linear infinite;
     }
     @keyframes spin { to { transform: rotate(360deg); } }
-    #loading-text { font-size: 13px; color: #94a3b8; letter-spacing: 0.1em; }
-    /* Счётчик 10 сек */
-    #loading-countdown {
-      font-size: 11px; color: #334155;
-      letter-spacing: 0.06em;
-    }
+    #ld-text { font-size: 13px; color: #94a3b8; letter-spacing: 0.1em; }
+    #ld-count { font-size: 12px; color: #334155; }
 
-    /* ── INSTRUCTION OVERLAY (показывается через 10 сек) ── */
+    /* ── INSTRUCTION OVERLAY ── */
     #instruction-overlay {
       position: fixed; inset: 0; z-index: 400;
-      background: rgba(2,6,23,0.92);
-      backdrop-filter: blur(12px);
+      background: rgba(2,6,23,0.93);
+      backdrop-filter: blur(14px); -webkit-backdrop-filter: blur(14px);
       display: none; flex-direction: column;
       align-items: center; justify-content: center;
       gap: 0; padding: 28px 24px;
@@ -144,59 +120,28 @@
     }
     #instruction-overlay.show { display: flex; }
     #instruction-overlay.fade { opacity: 0; transition: opacity 0.5s ease; pointer-events: none; }
-
-    .inst-logo { height: 28px; opacity: 0.8; margin-bottom: 28px; }
-
-    /* Анимированная иконка: книга → камера → 3D */
+    .inst-logo { height: 26px; opacity: 0.8; margin-bottom: 28px; }
     .inst-anim {
       display: flex; align-items: center; gap: 14px;
       margin-bottom: 28px;
     }
     .inst-icon {
       width: 54px; height: 54px; border-radius: 14px;
-      display: flex; align-items: center; justify-content: center;
-      font-size: 26px;
+      display: flex; align-items: center; justify-content: center; font-size: 26px;
       background: rgba(0,194,255,0.08);
       border: 1px solid rgba(0,194,255,0.2);
     }
+    .inst-icon.pulse { animation: iPulse 2s ease-in-out infinite; }
+    @keyframes iPulse { 0%,100%{box-shadow:0 0 0 0 rgba(0,194,255,0)} 50%{box-shadow:0 0 0 8px rgba(0,194,255,0.15)} }
     .inst-arrow { font-size: 18px; color: #334155; }
-    .inst-icon.pulse {
-      animation: iconPulse 2s ease-in-out infinite;
-    }
-    @keyframes iconPulse {
-      0%,100% { box-shadow: 0 0 0 0 rgba(0,194,255,0); }
-      50%      { box-shadow: 0 0 0 8px rgba(0,194,255,0.15); }
-    }
-
-    /* 3 языка текст */
-    .inst-texts {
-      text-align: center; margin-bottom: 28px;
-    }
-    .inst-lang {
-      margin-bottom: 10px;
-      padding-bottom: 10px;
-      border-bottom: 1px solid rgba(148,163,184,0.1);
-    }
+    .inst-texts { text-align: center; margin-bottom: 28px; }
+    .inst-lang { margin-bottom: 10px; padding-bottom: 10px; border-bottom: 1px solid rgba(148,163,184,0.1); }
     .inst-lang:last-child { border-bottom: none; margin-bottom: 0; padding-bottom: 0; }
-    .inst-lang-label {
-      font-size: 9px; font-weight: 700;
-      letter-spacing: 0.14em; text-transform: uppercase;
-      color: #334155; margin-bottom: 4px;
-    }
-    .inst-lang-text {
-      font-size: 15px; font-weight: 600;
-      color: #e2e8f0; line-height: 1.45;
-    }
-    .inst-lang-sub {
-      font-size: 11px; color: #64748b; margin-top: 2px;
-    }
-
-    .inst-tap {
-      font-size: 12px; color: #475569;
-      letter-spacing: 0.08em;
-      animation: tapBlink 1.8s ease-in-out infinite;
-    }
-    @keyframes tapBlink { 0%,100%{opacity:1} 50%{opacity:0.35} }
+    .inst-lang-label { font-size: 9px; font-weight: 700; letter-spacing: 0.14em; text-transform: uppercase; color: #334155; margin-bottom: 4px; }
+    .inst-lang-text { font-size: 15px; font-weight: 600; color: #e2e8f0; line-height: 1.45; }
+    .inst-lang-sub { font-size: 11px; color: #64748b; margin-top: 2px; }
+    .inst-tap { font-size: 12px; color: #475569; letter-spacing: 0.06em; animation: tap 1.8s ease-in-out infinite; }
+    @keyframes tap { 0%,100%{opacity:1} 50%{opacity:0.3} }
 
     /* ── NO MIND ERROR ── */
     #no-mind-error {
@@ -211,28 +156,129 @@
     #no-mind-error p  { color: #94a3b8; font-size: 14px; line-height: 1.6; max-width: 300px; }
     #no-mind-error a  {
       padding: 10px 20px;
-      background: rgba(0,194,255,0.1);
-      border: 1px solid rgba(0,194,255,0.35);
-      border-radius: 99px; color: #38bdf8;
-      text-decoration: none; font-size: 13px; font-weight: 600;
+      background: rgba(0,194,255,0.1); border: 1px solid rgba(0,194,255,0.35);
+      border-radius: 99px; color: #38bdf8; text-decoration: none;
+      font-size: 13px; font-weight: 600;
     }
   </style>
 </head>
 <body>
 
-<!-- ── LOADING (max 10 секунд) ── -->
+<!-- ══════════════════════════════════════════════════════════════
+     A-FRAME СЦЕНА — СТАТИЧЕСКИ В HTML, не через innerHTML
+     MindAR управляет размерами canvas и видео сам
+═══════════════════════════════════════════════════════════════ -->
+<a-scene
+  mindar-image="imageTargetSrc:/scanner/targets.mind;filterMinCF:0.001;filterBeta:0.01;missTolerance:5;warmupTolerance:3;"
+  color-space="sRGB"
+  renderer="colorManagement:true;physicallyCorrectLights:true"
+  vr-mode-ui="enabled:false"
+  device-orientation-permission-ui="enabled:false">
+
+  <a-assets timeout="90000">
+    <a-asset-item id="m0"  src="/assets/models/curiosity.glb"          response-type="arraybuffer"></a-asset-item>
+    <a-asset-item id="m1"  src="/assets/models/earth.glb"              response-type="arraybuffer"></a-asset-item>
+    <a-asset-item id="m2"  src="/assets/models/exomars.glb"            response-type="arraybuffer"></a-asset-item>
+    <a-asset-item id="m3"  src="/assets/models/gokturk-1.glb"          response-type="arraybuffer"></a-asset-item>
+    <a-asset-item id="m4"  src="/assets/models/gokturk-2.glb"          response-type="arraybuffer"></a-asset-item>
+    <a-asset-item id="m5"  src="/assets/models/hubble.glb"             response-type="arraybuffer"></a-asset-item>
+    <a-asset-item id="m6"  src="/assets/models/hubble.glb"             response-type="arraybuffer"></a-asset-item>
+    <a-asset-item id="m7"  src="/assets/models/imece.glb"              response-type="arraybuffer"></a-asset-item>
+    <a-asset-item id="m8"  src="/assets/models/ingenuity.glb"          response-type="arraybuffer"></a-asset-item>
+    <a-asset-item id="m9"  src="/assets/models/iss.glb"                response-type="arraybuffer"></a-asset-item>
+    <a-asset-item id="m10" src="/assets/models/jameswebb.glb"          response-type="arraybuffer"></a-asset-item>
+    <a-asset-item id="m11" src="/assets/models/jupiter.glb"            response-type="arraybuffer"></a-asset-item>
+    <a-asset-item id="m12" src="/assets/models/kepler.glb"             response-type="arraybuffer"></a-asset-item>
+    <a-asset-item id="m13" src="/assets/models/lagari.glb"             response-type="arraybuffer"></a-asset-item>
+    <a-asset-item id="m14" src="/assets/models/mars.glb"               response-type="arraybuffer"></a-asset-item>
+    <a-asset-item id="m15" src="/assets/models/marsodyssey.glb"        response-type="arraybuffer"></a-asset-item>
+    <a-asset-item id="m16" src="/assets/models/marsreconnaissance.glb" response-type="arraybuffer"></a-asset-item>
+    <a-asset-item id="m17" src="/assets/models/mercury.glb"            response-type="arraybuffer"></a-asset-item>
+    <a-asset-item id="m18" src="/assets/models/neptune.glb"            response-type="arraybuffer"></a-asset-item>
+    <a-asset-item id="m19" src="/assets/models/opportunity.glb"        response-type="arraybuffer"></a-asset-item>
+    <a-asset-item id="m20" src="/assets/models/perseverance.glb"       response-type="arraybuffer"></a-asset-item>
+    <a-asset-item id="m21" src="/assets/models/rasat.glb"              response-type="arraybuffer"></a-asset-item>
+    <a-asset-item id="m22" src="/assets/models/saturn.glb"             response-type="arraybuffer"></a-asset-item>
+    <a-asset-item id="m23" src="/assets/models/sojourner.glb"          response-type="arraybuffer"></a-asset-item>
+    <a-asset-item id="m24" src="/assets/models/zaglushka.glb"          response-type="arraybuffer"></a-asset-item>
+    <a-asset-item id="m25" src="/assets/models/sputnik.glb"            response-type="arraybuffer"></a-asset-item>
+    <a-asset-item id="m26" src="/assets/models/turksat-1a.glb"         response-type="arraybuffer"></a-asset-item>
+    <a-asset-item id="m27" src="/assets/models/turksat-1b.glb"         response-type="arraybuffer"></a-asset-item>
+    <a-asset-item id="m28" src="/assets/models/zaglushka.glb"          response-type="arraybuffer"></a-asset-item>
+    <a-asset-item id="m29" src="/assets/models/turksat-2a.glb"         response-type="arraybuffer"></a-asset-item>
+    <a-asset-item id="m30" src="/assets/models/turksat-3a.glb"         response-type="arraybuffer"></a-asset-item>
+    <a-asset-item id="m31" src="/assets/models/turksat-3b.glb"         response-type="arraybuffer"></a-asset-item>
+    <a-asset-item id="m32" src="/assets/models/turksat-4a.glb"         response-type="arraybuffer"></a-asset-item>
+    <a-asset-item id="m33" src="/assets/models/turksat-5a.glb"         response-type="arraybuffer"></a-asset-item>
+    <a-asset-item id="m34" src="/assets/models/turksat-5b.glb"         response-type="arraybuffer"></a-asset-item>
+    <a-asset-item id="m35" src="/assets/models/turksat-6a.glb"         response-type="arraybuffer"></a-asset-item>
+    <a-asset-item id="m36" src="/assets/models/uranus.glb"             response-type="arraybuffer"></a-asset-item>
+    <a-asset-item id="m37" src="/assets/models/venus.glb"              response-type="arraybuffer"></a-asset-item>
+    <a-asset-item id="m38" src="/assets/models/voyager1.glb"           response-type="arraybuffer"></a-asset-item>
+    <a-asset-item id="m39" src="/assets/models/voyager2.glb"           response-type="arraybuffer"></a-asset-item>
+    <a-asset-item id="m40" src="/assets/models/zhurong.glb"            response-type="arraybuffer"></a-asset-item>
+  </a-assets>
+
+  <a-camera position="0 0 0" look-controls="enabled:false"></a-camera>
+  <a-entity light="type:ambient;intensity:1.6"></a-entity>
+  <a-entity light="type:directional;intensity:1.2" position="1 2 1"></a-entity>
+
+  <!-- 41 якорей — каждый пустой, модель добавляется при распознавании -->
+  <a-entity id="a0"  mindar-image-target="targetIndex:0"></a-entity>
+  <a-entity id="a1"  mindar-image-target="targetIndex:1"></a-entity>
+  <a-entity id="a2"  mindar-image-target="targetIndex:2"></a-entity>
+  <a-entity id="a3"  mindar-image-target="targetIndex:3"></a-entity>
+  <a-entity id="a4"  mindar-image-target="targetIndex:4"></a-entity>
+  <a-entity id="a5"  mindar-image-target="targetIndex:5"></a-entity>
+  <a-entity id="a6"  mindar-image-target="targetIndex:6"></a-entity>
+  <a-entity id="a7"  mindar-image-target="targetIndex:7"></a-entity>
+  <a-entity id="a8"  mindar-image-target="targetIndex:8"></a-entity>
+  <a-entity id="a9"  mindar-image-target="targetIndex:9"></a-entity>
+  <a-entity id="a10" mindar-image-target="targetIndex:10"></a-entity>
+  <a-entity id="a11" mindar-image-target="targetIndex:11"></a-entity>
+  <a-entity id="a12" mindar-image-target="targetIndex:12"></a-entity>
+  <a-entity id="a13" mindar-image-target="targetIndex:13"></a-entity>
+  <a-entity id="a14" mindar-image-target="targetIndex:14"></a-entity>
+  <a-entity id="a15" mindar-image-target="targetIndex:15"></a-entity>
+  <a-entity id="a16" mindar-image-target="targetIndex:16"></a-entity>
+  <a-entity id="a17" mindar-image-target="targetIndex:17"></a-entity>
+  <a-entity id="a18" mindar-image-target="targetIndex:18"></a-entity>
+  <a-entity id="a19" mindar-image-target="targetIndex:19"></a-entity>
+  <a-entity id="a20" mindar-image-target="targetIndex:20"></a-entity>
+  <a-entity id="a21" mindar-image-target="targetIndex:21"></a-entity>
+  <a-entity id="a22" mindar-image-target="targetIndex:22"></a-entity>
+  <a-entity id="a23" mindar-image-target="targetIndex:23"></a-entity>
+  <a-entity id="a24" mindar-image-target="targetIndex:24"></a-entity>
+  <a-entity id="a25" mindar-image-target="targetIndex:25"></a-entity>
+  <a-entity id="a26" mindar-image-target="targetIndex:26"></a-entity>
+  <a-entity id="a27" mindar-image-target="targetIndex:27"></a-entity>
+  <a-entity id="a28" mindar-image-target="targetIndex:28"></a-entity>
+  <a-entity id="a29" mindar-image-target="targetIndex:29"></a-entity>
+  <a-entity id="a30" mindar-image-target="targetIndex:30"></a-entity>
+  <a-entity id="a31" mindar-image-target="targetIndex:31"></a-entity>
+  <a-entity id="a32" mindar-image-target="targetIndex:32"></a-entity>
+  <a-entity id="a33" mindar-image-target="targetIndex:33"></a-entity>
+  <a-entity id="a34" mindar-image-target="targetIndex:34"></a-entity>
+  <a-entity id="a35" mindar-image-target="targetIndex:35"></a-entity>
+  <a-entity id="a36" mindar-image-target="targetIndex:36"></a-entity>
+  <a-entity id="a37" mindar-image-target="targetIndex:37"></a-entity>
+  <a-entity id="a38" mindar-image-target="targetIndex:38"></a-entity>
+  <a-entity id="a39" mindar-image-target="targetIndex:39"></a-entity>
+  <a-entity id="a40" mindar-image-target="targetIndex:40"></a-entity>
+</a-scene>
+
+<!-- ── OVERLAYS (поверх сцены, высокий z-index) ── -->
+
 <div id="loading-overlay">
-  <img id="loading-logo" src="/assets/images/AlbaLogo.png" alt="Alba Space" />
-  <img id="loading-wordmark" src="/assets/images/albaspace.jpg" alt="ALBASPACE" />
-  <div class="ld-spinner"></div>
-  <p id="loading-text">AR Tarayıcı Yükleniyor...</p>
-  <p id="loading-countdown"></p>
+  <img id="ld-logo" src="/assets/images/AlbaLogo.png" alt="" />
+  <img id="ld-wordmark" src="/assets/images/albaspace.jpg" alt="ALBASPACE" />
+  <div class="ld-spin"></div>
+  <p id="ld-text">AR Tarayıcı Yükleniyor...</p>
+  <p id="ld-count"></p>
 </div>
 
-<!-- ── INSTRUCTION OVERLAY ── -->
 <div id="instruction-overlay" onclick="dismissInstruction()">
   <img class="inst-logo" src="/assets/images/albaspace.jpg" alt="ALBASPACE" />
-
   <div class="inst-anim">
     <div class="inst-icon">📖</div>
     <span class="inst-arrow">→</span>
@@ -240,7 +286,6 @@
     <span class="inst-arrow">→</span>
     <div class="inst-icon">🛸</div>
   </div>
-
   <div class="inst-texts">
     <div class="inst-lang">
       <div class="inst-lang-label">🇹🇷 Türkçe</div>
@@ -258,18 +303,15 @@
       <div class="inst-lang-sub">3D модель оживёт прямо на странице</div>
     </div>
   </div>
-
-  <p class="inst-tap">Devam etmek için ekrana dokun / Tap to continue / Нажми чтобы продолжить</p>
+  <p class="inst-tap">Devam / Continue / Продолжить — ekrana dokun</p>
 </div>
 
-<!-- ── NO MIND ERROR ── -->
 <div id="no-mind-error">
   <h2>⚠️ Sistem Hazır Değil</h2>
   <p>AR hedef dosyası bulunamadı.<br>Lütfen daha sonra tekrar deneyin.</p>
   <a href="javascript:history.back()">← Geri Dön</a>
 </div>
 
-<!-- ── TOP BAR ── -->
 <div id="top-bar">
   <a id="back-btn" href="javascript:history.back()">
     <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" width="13" height="13">
@@ -280,225 +322,118 @@
   <img id="top-logo" src="/assets/images/albaspace.jpg" alt="Alba Space" />
 </div>
 
-<!-- ── STATUS BADGE ── -->
 <div id="status-badge">📷 Kitabındaki görsele kameranı tut</div>
 
-<!-- ── MODEL LABEL ── -->
 <div id="model-label">
   <div id="model-label-name">—</div>
   <div id="model-label-sub">Hedef bulundu ✓</div>
 </div>
 
-<!-- A-Frame строится динамически -->
-<div id="aframe-container"></div>
-
 <script>
-// ── Конфигурация моделей (порядок = порядок компиляции targets.mind) ──
-const MODEL_TARGETS = [
-  { index: 0,  name: 'Curiosity',                   model: '/assets/models/curiosity.glb',           scale: '0.3 0.3 0.3' },
-  { index: 1,  name: 'Dünya / Earth',               model: '/assets/models/earth.glb',               scale: '0.4 0.4 0.4' },
-  { index: 2,  name: 'ExoMars',                     model: '/assets/models/exomars.glb',             scale: '0.3 0.3 0.3' },
-  { index: 3,  name: 'Göktürk-1',                   model: '/assets/models/gokturk-1.glb',           scale: '0.3 0.3 0.3' },
-  { index: 4,  name: 'Göktürk-2',                   model: '/assets/models/gokturk-2.glb',           scale: '0.3 0.3 0.3' },
-  { index: 5,  name: 'Hubble Teleskobu',            model: '/assets/models/hubble.glb',              scale: '0.3 0.3 0.3' },
-  { index: 6,  name: 'Hubble Teleskobu',            model: '/assets/models/hubble.glb',              scale: '0.3 0.3 0.3' },
-  { index: 7,  name: 'İMECE',                       model: '/assets/models/imece.glb',               scale: '0.3 0.3 0.3' },
-  { index: 8,  name: 'Ingenuity',                   model: '/assets/models/ingenuity.glb',           scale: '0.3 0.3 0.3' },
-  { index: 9,  name: 'Uzay İstasyonu (ISS)',        model: '/assets/models/iss.glb',                 scale: '0.2 0.2 0.2' },
-  { index: 10, name: 'James Webb Teleskobu',        model: '/assets/models/jameswebb.glb',           scale: '0.25 0.25 0.25' },
-  { index: 11, name: 'Jüpiter',                     model: '/assets/models/jupiter.glb',             scale: '0.4 0.4 0.4' },
-  { index: 12, name: 'Kepler Teleskobu',            model: '/assets/models/kepler.glb',              scale: '0.3 0.3 0.3' },
-  { index: 13, name: 'Lagari Hasan Çelebi',         model: '/assets/models/lagari.glb',              scale: '0.35 0.35 0.35' },
-  { index: 14, name: 'Mars',                        model: '/assets/models/mars.glb',                scale: '0.4 0.4 0.4' },
-  { index: 15, name: 'Mars Odyssey',                model: '/assets/models/marsodyssey.glb',         scale: '0.3 0.3 0.3' },
-  { index: 16, name: 'Mars Reconnaissance Orbiter', model: '/assets/models/marsreconnaissance.glb',  scale: '0.3 0.3 0.3' },
-  { index: 17, name: 'Merkür',                      model: '/assets/models/mercury.glb',             scale: '0.4 0.4 0.4' },
-  { index: 18, name: 'Neptün',                      model: '/assets/models/neptune.glb',             scale: '0.4 0.4 0.4' },
-  { index: 19, name: 'Opportunity Rover',           model: '/assets/models/opportunity.glb',         scale: '0.3 0.3 0.3' },
-  { index: 20, name: 'Perseverance Rover',          model: '/assets/models/perseverance.glb',        scale: '0.3 0.3 0.3' },
-  { index: 21, name: 'RASAT',                       model: '/assets/models/rasat.glb',               scale: '0.3 0.3 0.3' },
-  { index: 22, name: 'Satürn',                      model: '/assets/models/saturn.glb',              scale: '0.4 0.4 0.4' },
-  { index: 23, name: 'Sojourner Rover',             model: '/assets/models/sojourner.glb',           scale: '0.3 0.3 0.3' },
-  { index: 24, name: 'Spirit Rover',                model: '/assets/models/zaglushka.glb',           scale: '0.3 0.3 0.3' },
-  { index: 25, name: 'Sputnik',                     model: '/assets/models/sputnik.glb',             scale: '0.3 0.3 0.3' },
-  { index: 26, name: 'Türksat 1A',                  model: '/assets/models/turksat-1a.glb',          scale: '0.3 0.3 0.3' },
-  { index: 27, name: 'Türksat 1B',                  model: '/assets/models/turksat-1b.glb',          scale: '0.3 0.3 0.3' },
-  { index: 28, name: 'Türksat 1C',                  model: '/assets/models/zaglushka.glb',           scale: '0.3 0.3 0.3' },
-  { index: 29, name: 'Türksat 2A',                  model: '/assets/models/turksat-2a.glb',          scale: '0.3 0.3 0.3' },
-  { index: 30, name: 'Türksat 3A',                  model: '/assets/models/turksat-3a.glb',          scale: '0.3 0.3 0.3' },
-  { index: 31, name: 'Türksat 3B',                  model: '/assets/models/turksat-3b.glb',          scale: '0.3 0.3 0.3' },
-  { index: 32, name: 'Türksat 4A',                  model: '/assets/models/turksat-4a.glb',          scale: '0.3 0.3 0.3' },
-  { index: 33, name: 'Türksat 5A',                  model: '/assets/models/turksat-5a.glb',          scale: '0.3 0.3 0.3' },
-  { index: 34, name: 'Türksat 5B',                  model: '/assets/models/turksat-5b.glb',          scale: '0.3 0.3 0.3' },
-  { index: 35, name: 'Türksat 6A',                  model: '/assets/models/turksat-6a.glb',          scale: '0.3 0.3 0.3' },
-  { index: 36, name: 'Uranüs',                      model: '/assets/models/uranus.glb',              scale: '0.4 0.4 0.4' },
-  { index: 37, name: 'Venüs',                       model: '/assets/models/venus.glb',               scale: '0.4 0.4 0.4' },
-  { index: 38, name: 'Voyager 1',                   model: '/assets/models/voyager1.glb',            scale: '0.3 0.3 0.3' },
-  { index: 39, name: 'Voyager 2',                   model: '/assets/models/voyager2.glb',            scale: '0.3 0.3 0.3' },
-  { index: 40, name: 'Zhurong Rover',               model: '/assets/models/zhurong.glb',             scale: '0.3 0.3 0.3' },
+const NAMES = [
+  'Curiosity','Dünya / Earth','ExoMars','Göktürk-1','Göktürk-2',
+  'Hubble Teleskobu','Hubble Teleskobu','İMECE','Ingenuity','Uzay İstasyonu (ISS)',
+  'James Webb Teleskobu','Jüpiter','Kepler Teleskobu','Lagari Hasan Çelebi','Mars',
+  'Mars Odyssey','Mars Reconnaissance Orbiter','Merkür','Neptün','Opportunity Rover',
+  'Perseverance Rover','RASAT','Satürn','Sojourner Rover','Spirit Rover',
+  'Sputnik','Türksat 1A','Türksat 1B','Türksat 1C','Türksat 2A',
+  'Türksat 3A','Türksat 3B','Türksat 4A','Türksat 5A','Türksat 5B',
+  'Türksat 6A','Uranüs','Venüs','Voyager 1','Voyager 2','Zhurong Rover'
+];
+const SCALES = [
+  '0.3 0.3 0.3','0.4 0.4 0.4','0.3 0.3 0.3','0.3 0.3 0.3','0.3 0.3 0.3',
+  '0.3 0.3 0.3','0.3 0.3 0.3','0.3 0.3 0.3','0.3 0.3 0.3','0.2 0.2 0.2',
+  '0.25 0.25 0.25','0.4 0.4 0.4','0.3 0.3 0.3','0.35 0.35 0.35','0.4 0.4 0.4',
+  '0.3 0.3 0.3','0.3 0.3 0.3','0.4 0.4 0.4','0.4 0.4 0.4','0.3 0.3 0.3',
+  '0.3 0.3 0.3','0.3 0.3 0.3','0.4 0.4 0.4','0.3 0.3 0.3','0.3 0.3 0.3',
+  '0.3 0.3 0.3','0.3 0.3 0.3','0.3 0.3 0.3','0.3 0.3 0.3','0.3 0.3 0.3',
+  '0.3 0.3 0.3','0.3 0.3 0.3','0.3 0.3 0.3','0.3 0.3 0.3','0.3 0.3 0.3',
+  '0.3 0.3 0.3','0.4 0.4 0.4','0.4 0.4 0.4','0.3 0.3 0.3','0.3 0.3 0.3','0.3 0.3 0.3'
 ];
 
-const MIND_SRC = '/scanner/targets.mind';
+const loadingEl  = document.getElementById('loading-overlay');
+const instructEl = document.getElementById('instruction-overlay');
+const statusEl   = document.getElementById('status-badge');
+const labelEl    = document.getElementById('model-label');
+const labelNameEl= document.getElementById('model-label-name');
+const noMindEl   = document.getElementById('no-mind-error');
+const countEl    = document.getElementById('ld-count');
 
-const loadingEl    = document.getElementById('loading-overlay');
-const instructEl   = document.getElementById('instruction-overlay');
-const statusEl     = document.getElementById('status-badge');
-const labelEl      = document.getElementById('model-label');
-const labelNameEl  = document.getElementById('model-label-name');
-const noMindEl     = document.getElementById('no-mind-error');
-const countdownEl  = document.getElementById('loading-countdown');
-
-// ── Принудительно скрываем загрузку через 10 секунд ──
-let loadingDone = false;
-let countdown = 10;
-
-const countdownTimer = setInterval(() => {
-  countdown--;
-  if (countdown > 0) {
-    countdownEl.textContent = countdown + 's';
-  } else {
-    clearInterval(countdownTimer);
-    forceShowInstruction();
+// ── Таймер 10 секунд ──
+let arReady = false;
+let secs = 10;
+const timer = setInterval(() => {
+  secs--;
+  countEl.textContent = secs > 0 ? secs + 's' : '';
+  if (secs <= 0) {
+    clearInterval(timer);
+    if (!arReady) showInstruction();
   }
 }, 1000);
 
 function hideLoading() {
-  if (loadingDone) return;
-  loadingDone = true;
-  clearInterval(countdownTimer);
-  loadingEl.classList.add('fade');
-  setTimeout(() => { loadingEl.style.display = 'none'; }, 650);
+  if (!loadingEl.classList.contains('gone')) {
+    loadingEl.classList.add('gone');
+    setTimeout(() => { loadingEl.style.display = 'none'; }, 700);
+  }
 }
 
-function forceShowInstruction() {
+function showInstruction() {
   hideLoading();
-  // Показываем инструкцию только если AR ещё не запустился
-  if (!arReady) {
-    instructEl.classList.add('show');
-  }
+  instructEl.classList.add('show');
 }
 
 function dismissInstruction() {
   instructEl.classList.add('fade');
-  setTimeout(() => {
-    instructEl.style.display = 'none';
-    instructEl.classList.remove('show', 'fade');
-  }, 500);
-  statusEl.style.display = 'block';
+  setTimeout(() => { instructEl.style.display = 'none'; }, 500);
 }
 
-// ── Проверяем targets.mind, потом строим сцену ──
-let arReady = false;
-
-fetch(MIND_SRC, { method: 'HEAD' })
-  .then(r => {
-    if (!r.ok) throw new Error('not found');
-    waitForLibsAndBuild();
-  })
+// ── Проверяем targets.mind ──
+fetch('/scanner/targets.mind', { method: 'HEAD' })
+  .then(r => { if (!r.ok) throw new Error(); })
   .catch(() => {
+    clearInterval(timer);
     hideLoading();
     noMindEl.classList.add('show');
   });
 
-// Ждём загрузки A-Frame + MindAR (они загружены async)
-function waitForLibsAndBuild() {
-  if (window.AFRAME && window.MINDAR) {
-    buildScene();
-  } else {
-    setTimeout(waitForLibsAndBuild, 150);
+// ── A-Frame событие: сцена готова ──
+document.querySelector('a-scene').addEventListener('loaded', () => {
+  arReady = true;
+  clearInterval(timer);
+  hideLoading();
+  if (instructEl.classList.contains('show')) {
+    setTimeout(dismissInstruction, 600);
   }
-}
+});
 
-function buildScene() {
-  // Assets — только ссылки, без preload
-  let assetsHTML = '<a-assets timeout="90000" autoload="false">';
-  MODEL_TARGETS.forEach(t => {
-    assetsHTML += `<a-asset-item id="m-${t.index}" src="${t.model}" response-type="arraybuffer"></a-asset-item>`;
-  });
-  assetsHTML += '</a-assets>';
+// ── Вешаем события на все 41 якорь ──
+for (let i = 0; i < 41; i++) {
+  const anchor = document.getElementById('a' + i);
+  if (!anchor) continue;
 
-  // Anchors
-  let anchorsHTML = `
-    <a-camera position="0 0 0" look-controls="enabled: false"></a-camera>
-    <a-entity light="type: ambient; intensity: 1.6"></a-entity>
-    <a-entity light="type: directional; intensity: 1.2" position="1 2 1"></a-entity>`;
+  anchor.addEventListener('targetFound', () => {
+    statusEl.textContent = '✅ ' + NAMES[i] + ' bulundu!';
+    statusEl.classList.add('found');
+    labelNameEl.textContent = NAMES[i];
+    labelEl.style.display = 'block';
 
-  MODEL_TARGETS.forEach(t => {
-    anchorsHTML += `<a-entity id="a${t.index}" mindar-image-target="targetIndex:${t.index}" data-n="${t.name}" data-s="${t.scale}"></a-entity>`;
-  });
-
-  document.getElementById('aframe-container').innerHTML = `
-    <a-scene
-      id="ar-scene"
-      mindar-image="imageTargetSrc:${MIND_SRC};filterMinCF:0.001;filterBeta:0.01;missTolerance:5;warmupTolerance:3;"
-      color-space="sRGB"
-      renderer="colorManagement:true;physicallyCorrectLights:true;alpha:true"
-      vr-mode-ui="enabled:false"
-      device-orientation-permission-ui="enabled:false">
-      ${assetsHTML}
-      ${anchorsHTML}
-    </a-scene>`;
-
-  const scene = document.querySelector('a-scene');
-
-  scene.addEventListener('loaded', () => {
-    arReady = true;
-    hideLoading();
-    // Скрываем инструкцию если она была показана
-    if (instructEl.classList.contains('show')) {
-      setTimeout(dismissInstruction, 800);
+    // Ленивая загрузка модели при первом нахождении
+    if (!anchor.querySelector('a-gltf-model')) {
+      const m = document.createElement('a-gltf-model');
+      m.setAttribute('src', '#m' + i);
+      m.setAttribute('scale', SCALES[i]);
+      m.setAttribute('position', '0 0 0');
+      m.setAttribute('animation-mixer', 'clip:*;loop:repeat');
+      anchor.appendChild(m);
     }
-    statusEl.style.display = 'block';
-    fixCanvas();
   });
 
-  scene.addEventListener('arError', () => {
-    hideLoading();
-    statusEl.textContent = '❌ Kamera açılamadı';
-    statusEl.style.display = 'block';
+  anchor.addEventListener('targetLost', () => {
+    statusEl.textContent = '📷 Kitabındaki görsele kameranı tut';
+    statusEl.classList.remove('found');
+    labelEl.style.display = 'none';
   });
-
-  // Вешаем события на якоря
-  MODEL_TARGETS.forEach(t => {
-    const anchor = document.getElementById(`a${t.index}`);
-    if (!anchor) return;
-
-    anchor.addEventListener('targetFound', () => {
-      statusEl.textContent = `✅ ${t.name} bulundu!`;
-      statusEl.classList.add('found');
-      labelNameEl.textContent = t.name;
-      labelEl.style.display = 'block';
-
-      // Ленивая загрузка модели
-      if (!anchor.querySelector('a-gltf-model')) {
-        const m = document.createElement('a-gltf-model');
-        m.setAttribute('src', `#m-${t.index}`);
-        m.setAttribute('scale', t.scale);
-        m.setAttribute('position', '0 0 0');
-        m.setAttribute('animation-mixer', 'clip:*;loop:repeat');
-        anchor.appendChild(m);
-      }
-    });
-
-    anchor.addEventListener('targetLost', () => {
-      statusEl.textContent = '📷 Kitabındaki görsele kameranı tut';
-      statusEl.classList.remove('found');
-      labelEl.style.display = 'none';
-    });
-  });
-}
-
-// Canvas fullscreen (только canvas, не видео)
-function fixCanvas() {
-  const apply = () => {
-    document.querySelectorAll('canvas').forEach(c => {
-      c.style.cssText = 'width:100vw!important;height:100dvh!important;position:fixed!important;top:0!important;left:0!important;';
-    });
-  };
-  apply();
-  setTimeout(apply, 500);
-  setTimeout(apply, 1500);
-  new ResizeObserver(apply).observe(document.body);
 }
 </script>
 </body>
