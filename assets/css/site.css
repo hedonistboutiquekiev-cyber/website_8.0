@@ -2298,6 +2298,42 @@ select, select option {
 
 .model-loading-overlay.fade-out { opacity: 0; transform: translateY(-6px); transition: opacity 0.45s ease, transform 0.45s ease; pointer-events: none; }
 
+/* ── Мобильный loader-card: компактнее, сдвинут ниже центра ── */
+@media (max-width: 768px) {
+  .model-loading-overlay {
+    align-items: flex-end;
+    padding-bottom: 20px;
+  }
+  .model-loading-overlay .loader-card {
+    width: 88%;
+    max-width: 100%;
+    padding: 16px 18px 14px;
+    border-radius: 14px;
+  }
+  .model-loading-overlay .loading-logo img {
+    width: 130px;
+  }
+  .model-loading-overlay .loader-orb {
+    width: 58px;
+    height: 58px;
+    margin: 0 auto 10px;
+  }
+  .model-loading-overlay .loading-text {
+    font-size: 13px;
+    margin-top: 8px;
+  }
+  .model-loading-overlay .loading-subtext {
+    font-size: 11px;
+  }
+  .model-loading-overlay .progress-bar {
+    height: 5px;
+  }
+  .model-loading-overlay .overlay-hint {
+    font-size: 9px;
+    margin-top: 10px;
+  }
+}
+
 @keyframes albaOrbSpin { to { transform: rotate(360deg); } }
 @keyframes albaGlowPulse { 0%, 100% { opacity: 0.4; transform: scale(1); } 50% { opacity: 0.8; transform: scale(1.03); } }
 @keyframes albaProgressGlow { 0%, 100% { opacity: 0.1; } 50% { opacity: 0.5; } }
@@ -3090,14 +3126,16 @@ body:has(model-viewer) .container model-viewer {
 
 @media (max-width: 768px) {
   body:has(model-viewer) .container model-viewer {
-    height: 420px !important;
+    height: 65vw !important;
+    min-height: 340px !important;
+    max-height: 520px !important;
   }
 }
 
 @media (max-width: 480px) {
   body:has(model-viewer) .container model-viewer {
-    height: 55vw !important;
-    min-height: 220px !important;
+    height: 70vw !important;
+    min-height: 300px !important;
   }
 }
 
