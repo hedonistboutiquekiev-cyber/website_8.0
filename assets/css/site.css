@@ -1723,7 +1723,7 @@ select, select option {
 .footer-left {
   display: flex;
   flex-direction: column;
-  gap: 20px;
+  gap: 0px;
 }
 
 .footer-logo p {
@@ -1833,6 +1833,10 @@ select, select option {
 }
 
 /* Special styling for office address buttons */
+.footer-actions--offices {
+  margin-top: 30px;
+}
+
 .footer-actions--offices .footer-action {
   border: 2px solid rgba(0, 194, 255, 0.4);
 }
@@ -3649,3 +3653,27 @@ body:has(model-viewer) .container model-viewer {
   color: rgba(255,255,255,0.5);
   font-family: 'Inter', system-ui, sans-serif;
 }
+
+/* ===== Поднять содержимое главной страницы на 2 см ===== */
+/* Поднимает .home-main (главный хедер/герой) на 2 сантиметра вверх */
+body.home-page .home-main,
+body.index-page .home-main {
+  margin-top: calc(80px - 2cm) !important;
+}
+
+@media (max-width: 768px) {
+  body.home-page .home-main,
+  body.index-page .home-main {
+    /* Учитываем уменьшенное пространство на мобильных устройствах */
+    margin-top: calc(90px - 2cm) !important;
+  }
+}
+
+/* ===== Выровнять H1 в герое (убрать лишние отступы слева) ===== */
+body.home-page .hero-content h1,
+body.index-page .hero-content h1 {
+  margin-left: 0 !important;
+  padding-left: 0 !important;
+  text-indent: 0 !important;
+}
+
