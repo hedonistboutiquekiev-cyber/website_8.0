@@ -1726,6 +1726,26 @@ select, select option {
   gap: 0px;
 }
 
+.footer-social-row {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  flex-wrap: wrap;
+}
+
+.alba-logo {
+  width: 24px;
+  height: 24px;
+  max-width: none;
+  object-fit: contain;
+  display: block;
+}
+
+.footer-social--xl .alba-logo {
+  width: 32px;
+  height: 32px;
+}
+
 .footer-logo p {
   margin: 10px 0 0;
   color: #9ca3af;
