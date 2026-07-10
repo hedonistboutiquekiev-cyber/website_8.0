@@ -3677,3 +3677,21 @@ body.index-page .hero-content h1 {
   text-indent: 0 !important;
 }
 
+/* Принудительное левое выравнивание и унификация ширины с описанием */
+body.home-page .hero-content h1,
+body.index-page .hero-content h1 {
+  text-align: left !important;
+  max-width: 480px !important; /* совпадает с .hero .lead */
+  margin: 0 0 10px 0 !important;
+  box-sizing: border-box !important;
+}
+
+/* На мобильных экранах пусть остается центрированным для компактного вида */
+@media (max-width: 900px) {
+  body.home-page .hero-content h1,
+  body.index-page .hero-content h1 {
+    text-align: center !important;
+    max-width: 100% !important;
+  }
+}
+
