@@ -1723,7 +1723,7 @@ select, select option {
 .footer-left {
   display: flex;
   flex-direction: column;
-  gap: 0px;
+  gap: 16px;
 }
 
 .footer-social-row {
@@ -1731,19 +1731,21 @@ select, select option {
   align-items: center;
   gap: 12px;
   flex-wrap: wrap;
+  margin-top: 0;
 }
 
 .alba-logo {
-  width: 24px;
-  height: 24px;
+  width: 64px;
+  height: 64px;
   max-width: none;
   object-fit: contain;
   display: block;
+  margin-left: 12px;
 }
 
 .footer-social--xl .alba-logo {
-  width: 32px;
-  height: 32px;
+  width: 64px;
+  height: 64px;
 }
 
 .footer-logo p {
@@ -1751,6 +1753,7 @@ select, select option {
   color: #9ca3af;
   font-size: 0.9em;
 }
+
 
 /* ========================================
    FOOTER ACTION BUTTONS - ENHANCED UI/UX
