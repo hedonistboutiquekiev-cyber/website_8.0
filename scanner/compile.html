@@ -1,9 +1,9 @@
 <!DOCTYPE html>
-<html lang="tr">
+<html lang="ru">
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Alba Space — targets.mind Derleyici</title>
+  <title>Alba Space — targets.mind Компилятор</title>
 
   <!-- A-Frame (нужен для инициализации aframe-бандла MindAR) -->
   <script src="https://aframe.io/releases/1.4.2/aframe.min.js"></script>
@@ -144,48 +144,48 @@
 </head>
 <body>
 <div class="container">
-  <a href="/scanner/" style="color:#64748b;font-size:13px;text-decoration:none;display:inline-block;margin-bottom:20px;">← Tarayıcıya Dön</a>
+  <a href="/scanner/" style="color:#64748b;font-size:13px;text-decoration:none;display:inline-block;margin-bottom:20px;">← Вернуться к сканеру</a>
 
-  <h1>🔧 targets.mind Derleyici</h1>
+  <h1>🔧 targets.mind Компилятор</h1>
   <p class="subtitle">
-    Bu araç, <code>assets/models-pictures/</code> klasöründeki tüm görüntüleri sırayla yükler ve MindAR için <code>targets.mind</code> dosyasını oluşturur.<br>
-    Derleme işlemi birkaç dakika sürebilir. Tarayıcı sekmesini kapatmayın.
+    Этот инструмент последовательно загружает все изображения из папки <code>assets/models-pictures/</code> и создаёт файл <code>targets.mind</code> для MindAR.<br>
+    Процесс компиляции может занять несколько минут. Не закрывайте вкладку браузера.
   </p>
 
   <!-- Instructions -->
   <div class="section">
-    <div class="section-title">Kullanım Talimatları</div>
+    <div class="section-title">Инструкция по использованию</div>
     <div class="instructions">
       <ol>
-        <li>Aşağıdaki resimler <strong>doğru sırada</strong> listelenmiştir (bu sıra <code>scanner/index.html</code> ile eşleşmek zorundadır).</li>
-        <li><strong>"Derlemeyi Başlat"</strong> butonuna basın ve işlem tamamlanana kadar bekleyin.</li>
-        <li>İşlem bitince <strong>"targets.mind İndir"</strong> butonu çıkacak. Dosyayı indirin.</li>
-        <li>İndirilen <code>targets.mind</code> dosyasını <strong><code>scanner/</code></strong> klasörüne kopyalayın.</li>
-        <li>Artık AR tarayıcı çalışmaya hazır!</li>
+        <li>Изображения ниже перечислены <strong>в правильном порядке</strong> (этот порядок должен совпадать с <code>scanner/index.html</code>).</li>
+        <li>Нажмите кнопку <strong>«Запустить компиляцию»</strong> и дождитесь завершения процесса.</li>
+        <li>По завершении появится кнопка <strong>«Скачать targets.mind»</strong>. Скачайте файл.</li>
+        <li>Скопируйте скачанный <code>targets.mind</code> в папку <strong><code>scanner/</code></strong>.</li>
+        <li>Теперь AR-сканер готов к работе!</li>
       </ol>
     </div>
   </div>
 
   <!-- Image grid -->
   <div class="section">
-    <div class="section-title">Hedef Görseller (41 adet — derleme sırası)</div>
+    <div class="section-title">Целевые изображения (41 — порядок компиляции)</div>
     <div id="images-grid"></div>
   </div>
 
   <!-- Compile controls -->
   <div class="section">
-    <div class="section-title">Derleme</div>
+    <div class="section-title">Компиляция</div>
     <div class="row">
       <button class="btn btn-primary" id="compile-btn" onclick="startCompile()">
-        ⚙️ Derlemeyi Başlat
+        ⚙️ Запустить компиляцию
       </button>
       <button class="btn btn-secondary" id="download-btn" onclick="downloadMind()" style="display:none">
-        ⬇️ targets.mind İndir
+        ⬇️ Скачать targets.mind
       </button>
     </div>
     <div id="progress-wrap">
       <div id="progress-bar-bg"><div id="progress-bar"></div></div>
-      <div id="progress-text">Hazırlanıyor...</div>
+      <div id="progress-text">Подготовка...</div>
     </div>
     <div id="status-box"></div>
   </div>
@@ -237,7 +237,7 @@ const IMAGES = [
   { name: 'zhurong',              file: 'zhurong.png' },
 ];
 
-const BASE = '/assets/models-pictures/';
+const BASE = '/assets/models-pictures/book/';
 let compiledBuffer = null;
 
 // Build grid
@@ -273,7 +273,7 @@ async function loadImageAsHTMLImage(url) {
     const img = new Image();
     img.crossOrigin = 'anonymous';
     img.onload = () => resolve(img);
-    img.onerror = () => reject(new Error(`Yüklenemedi: ${url}`));
+    img.onerror = () => reject(new Error(`Не удалось загрузить: ${url}`));
     img.src = url + '?t=' + Date.now(); // cache bust
   });
 }
@@ -284,39 +284,39 @@ async function startCompile() {
   compiledBuffer = null;
   document.getElementById('download-btn').style.display = 'none';
 
-  setStatus('⏳ Görseller yükleniyor...', 'info');
-  setProgress(0, 'Görseller hazırlanıyor...');
+  setStatus('⏳ Загружаются изображения...', 'info');
+  setProgress(0, 'Подготовка изображений...');
 
   try {
     // 1. Load all images
     const htmlImages = [];
     for (let i = 0; i < IMAGES.length; i++) {
-      setProgress(Math.round((i / IMAGES.length) * 40), `Görsel yükleniyor: ${IMAGES[i].name} (${i+1}/${IMAGES.length})`);
+      setProgress(Math.round((i / IMAGES.length) * 40), `Загрузка изображения: ${IMAGES[i].name} (${i+1}/${IMAGES.length})`);
       const img = await loadImageAsHTMLImage(BASE + IMAGES[i].file);
       htmlImages.push(img);
     }
 
-    setStatus('⚙️ Derleniyor... Bu işlem 2-5 dakika sürebilir. Sayfayı kapatmayın.', 'info');
-    setProgress(40, 'MindAR derleyicisi çalışıyor...');
+    setStatus('⚙️ Идёт компиляция... Этот процесс может занять 2–5 минут. Не закрывайте страницу.', 'info');
+    setProgress(40, 'Компилятор MindAR работает...');
 
     // 2. Compile with MindAR
     const compiler = new MINDAR.IMAGE.Compiler();
     await compiler.compileImageTargets(htmlImages, (progress) => {
       const pct = 40 + Math.round(progress * 58);
-      setProgress(pct, `Derleniyor... ${Math.round(progress * 100)}%`);
+      setProgress(pct, `Компиляция... ${Math.round(progress * 100)}%`);
     });
 
-    setProgress(99, 'Dosya hazırlanıyor...');
+    setProgress(99, 'Подготовка файла...');
     compiledBuffer = await compiler.exportData();
 
-    setProgress(100, 'Tamamlandı!');
-    setStatus(`✅ Derleme başarılı! <strong>${IMAGES.length} hedef</strong> derlendi.<br>
-      "targets.mind İndir" butonuna basın ve dosyayı <code>scanner/targets.mind</code> olarak kaydedin.`, 'ok');
+    setProgress(100, 'Готово!');
+    setStatus(`✅ Компиляция успешно завершена! Сгенерировано <strong>${IMAGES.length} целей</strong>.<br>
+      Нажмите кнопку «Скачать targets.mind» и сохраните файл как <code>scanner/targets.mind</code>.`, 'ok');
 
     document.getElementById('download-btn').style.display = 'inline-flex';
   } catch (err) {
-    setStatus(`❌ Hata: ${err.message}`, 'error');
-    setProgress(0, 'Hata oluştu');
+    setStatus(`❌ Ошибка: ${err.message}`, 'error');
+    setProgress(0, 'Произошла ошибка');
   }
 
   btn.disabled = false;
