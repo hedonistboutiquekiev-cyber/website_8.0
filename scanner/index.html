@@ -173,48 +173,10 @@
   color-space="sRGB"
   renderer="colorManagement:true;physicallyCorrectLights:true"
   vr-mode-ui="enabled:false"
-  device-orientation-permission-ui="enabled:false">
+  device-orientation-permission-ui="enabled:false"
+  loading-screen="enabled:false">
 
-  <a-assets timeout="90000">
-    <a-asset-item id="m0"  src="/assets/models/curiosity.glb"          response-type="arraybuffer"></a-asset-item>
-    <a-asset-item id="m1"  src="/assets/models/earth.glb"              response-type="arraybuffer"></a-asset-item>
-    <a-asset-item id="m2"  src="/assets/models/exomars.glb"            response-type="arraybuffer"></a-asset-item>
-    <a-asset-item id="m3"  src="/assets/models/gokturk-1.glb"          response-type="arraybuffer"></a-asset-item>
-    <a-asset-item id="m4"  src="/assets/models/gokturk-2.glb"          response-type="arraybuffer"></a-asset-item>
-    <a-asset-item id="m5"  src="/assets/models/hubble.glb"             response-type="arraybuffer"></a-asset-item>
-    <a-asset-item id="m6"  src="/assets/models/hubble.glb"             response-type="arraybuffer"></a-asset-item>
-    <a-asset-item id="m7"  src="/assets/models/imece.glb"              response-type="arraybuffer"></a-asset-item>
-    <a-asset-item id="m8"  src="/assets/models/ingenuity.glb"          response-type="arraybuffer"></a-asset-item>
-    <a-asset-item id="m9"  src="/assets/models/iss.glb"                response-type="arraybuffer"></a-asset-item>
-    <a-asset-item id="m10" src="/assets/models/jameswebb.glb"          response-type="arraybuffer"></a-asset-item>
-    <a-asset-item id="m11" src="/assets/models/jupiter.glb"            response-type="arraybuffer"></a-asset-item>
-    <a-asset-item id="m12" src="/assets/models/kepler.glb"             response-type="arraybuffer"></a-asset-item>
-    <a-asset-item id="m13" src="/assets/models/lagari.glb"             response-type="arraybuffer"></a-asset-item>
-    <a-asset-item id="m14" src="/assets/models/mars.glb"               response-type="arraybuffer"></a-asset-item>
-    <a-asset-item id="m15" src="/assets/models/marsodyssey.glb"        response-type="arraybuffer"></a-asset-item>
-    <a-asset-item id="m16" src="/assets/models/marsreconnaissance.glb" response-type="arraybuffer"></a-asset-item>
-    <a-asset-item id="m17" src="/assets/models/mercury.glb"            response-type="arraybuffer"></a-asset-item>
-    <a-asset-item id="m18" src="/assets/models/neptune.glb"            response-type="arraybuffer"></a-asset-item>
-    <a-asset-item id="m19" src="/assets/models/opportunity.glb"        response-type="arraybuffer"></a-asset-item>
-    <a-asset-item id="m20" src="/assets/models/perseverance.glb"       response-type="arraybuffer"></a-asset-item>
-    <a-asset-item id="m21" src="/assets/models/rasat.glb"              response-type="arraybuffer"></a-asset-item>
-    <a-asset-item id="m22" src="/assets/models/saturn.glb"             response-type="arraybuffer"></a-asset-item>
-    <a-asset-item id="m23" src="/assets/models/sputnik.glb"            response-type="arraybuffer"></a-asset-item>
-    <a-asset-item id="m24" src="/assets/models/turksat-1a.glb"         response-type="arraybuffer"></a-asset-item>
-    <a-asset-item id="m25" src="/assets/models/turksat-1b.glb"         response-type="arraybuffer"></a-asset-item>
-    <a-asset-item id="m26" src="/assets/models/turksat-2a.glb"         response-type="arraybuffer"></a-asset-item>
-    <a-asset-item id="m28" src="/assets/models/turksat-3a.glb"         response-type="arraybuffer"></a-asset-item>
-    <a-asset-item id="m29" src="/assets/models/turksat-3b.glb"         response-type="arraybuffer"></a-asset-item>
-    <a-asset-item id="m30" src="/assets/models/turksat-4a.glb"         response-type="arraybuffer"></a-asset-item>
-    <a-asset-item id="m31" src="/assets/models/turksat-5a.glb"         response-type="arraybuffer"></a-asset-item>
-    <a-asset-item id="m32" src="/assets/models/turksat-5b.glb"         response-type="arraybuffer"></a-asset-item>
-    <a-asset-item id="m33" src="/assets/models/turksat-6a.glb"         response-type="arraybuffer"></a-asset-item>
-    <a-asset-item id="m34" src="/assets/models/uranus.glb"             response-type="arraybuffer"></a-asset-item>
-    <a-asset-item id="m35" src="/assets/models/venus.glb"              response-type="arraybuffer"></a-asset-item>
-    <a-asset-item id="m36" src="/assets/models/voyager1.glb"           response-type="arraybuffer"></a-asset-item>
-    <a-asset-item id="m37" src="/assets/models/voyager2.glb"           response-type="arraybuffer"></a-asset-item>
-    <a-asset-item id="m38" src="/assets/models/zhurong.glb"            response-type="arraybuffer"></a-asset-item>
-  </a-assets>
+  <a-assets timeout="90000"></a-assets>
 
   <a-camera position="0 0 0" look-controls="enabled:false"></a-camera>
   <a-entity light="type:ambient;intensity:4.0"></a-entity>
@@ -350,11 +312,16 @@ const SCALES = [
   '0.9 0.9 0.9','1.2 1.2 1.2','1.2 1.2 1.2','0.9 0.9 0.9','0.9 0.9 0.9','0.9 0.9 0.9'
 ];
 
-// 41 якорей, но в HTML доступно только 38 GLB-ассетов: m27, m39, m40 отсутствуют.
-// Чтобы сцена не ломалась на этих индексах, используем null и пропускаем их.
-const MODEL_ASSET_IDS = [
-  'm0','m1','m2','m3','m4','m5','m6','m7','m8','m9','m10','m11','m12','m13','m14','m15','m16','m17','m18','m19','m20','m21','m22','m23','m24','m25',
-  'm26', null, 'm28','m29','m30','m31','m32','m33','m34','m35','m36','m37','m38', null, null
+// 41 якорей, но некоторые индексы не имеют модели; для них оставляем null.
+const MODEL_URLS = [
+  '/assets/models/curiosity.glb','/assets/models/earth.glb','/assets/models/exomars.glb','/assets/models/gokturk-1.glb','/assets/models/gokturk-2.glb',
+  '/assets/models/hubble.glb','/assets/models/hubble.glb','/assets/models/imece.glb','/assets/models/ingenuity.glb','/assets/models/iss.glb',
+  '/assets/models/jameswebb.glb','/assets/models/jupiter.glb','/assets/models/kepler.glb','/assets/models/lagari.glb','/assets/models/mars.glb',
+  '/assets/models/marsodyssey.glb','/assets/models/marsreconnaissance.glb','/assets/models/mercury.glb','/assets/models/neptune.glb','/assets/models/opportunity.glb',
+  '/assets/models/perseverance.glb','/assets/models/rasat.glb','/assets/models/saturn.glb','/assets/models/sputnik.glb','/assets/models/turksat-1a.glb',
+  '/assets/models/turksat-1b.glb','/assets/models/turksat-2a.glb', null, '/assets/models/turksat-3a.glb','/assets/models/turksat-3b.glb',
+  '/assets/models/turksat-4a.glb','/assets/models/turksat-5a.glb','/assets/models/turksat-5b.glb','/assets/models/turksat-6a.glb','/assets/models/uranus.glb',
+  '/assets/models/venus.glb','/assets/models/voyager1.glb','/assets/models/voyager2.glb','/assets/models/zhurong.glb', null, null
 ];
 
 const loadingEl  = document.getElementById('loading-overlay');
@@ -403,13 +370,22 @@ fetch('/scanner/targets.mind', { method: 'HEAD' })
     noMindEl.classList.add('show');
   });
 
-// ── A-Frame событие: сцена готова ──
-document.querySelector('a-scene').addEventListener('loaded', () => {
+// ── MindAR событие: камера и трекер готовы ──
+const sceneEl = document.querySelector('a-scene');
+sceneEl.addEventListener('arReady', () => {
   arReady = true;
   clearInterval(timer);
   hideLoading();
   if (instructEl.classList.contains('show')) {
     setTimeout(dismissInstruction, 600);
+  }
+});
+
+sceneEl.addEventListener('loaded', () => {
+  if (!arReady) {
+    arReady = true;
+    clearInterval(timer);
+    hideLoading();
   }
 });
 
@@ -426,14 +402,14 @@ for (let i = 0; i < 41; i++) {
 
     // Ленивая загрузка модели при первом нахождении
     if (!anchor.querySelector('a-gltf-model')) {
-      const assetId = MODEL_ASSET_IDS[i];
-      if (!assetId) {
+      const modelUrl = MODEL_URLS[i];
+      if (!modelUrl) {
         console.warn('No model asset configured for target index', i);
         return;
       }
 
       const m = document.createElement('a-gltf-model');
-      m.setAttribute('src', '#' + assetId);
+      m.setAttribute('src', modelUrl);
       m.setAttribute('scale', SCALES[i]);
       m.setAttribute('position', '0 0 0');
       m.setAttribute('animation-mixer', 'clip:*;loop:repeat');
