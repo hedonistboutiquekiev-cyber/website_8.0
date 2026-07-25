@@ -1749,6 +1749,22 @@ select, select option {
   height: 80px;
 }
 
+@media (max-width: 767px) {
+  .footer-social-row {
+    flex-wrap: nowrap;
+    gap: 8px;
+  }
+
+  .alba-logo,
+  .footer-social--xl .alba-logo {
+    width: 26px;
+    height: 26px;
+    margin-left: 8px;
+    margin-top: 0 !important;
+    flex-shrink: 0;
+  }
+}
+
 .footer-logo p {
   margin: 10px 0 0;
   color: #9ca3af;
