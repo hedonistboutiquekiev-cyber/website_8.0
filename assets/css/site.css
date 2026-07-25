@@ -1757,11 +1757,12 @@ select, select option {
 
   .alba-logo,
   .footer-social--xl .alba-logo {
-    width: 10px;
-    height: 1%;
+    width: 26px;
+    height: 26px;
     margin-left: 3px;
     margin-top: 0 !important;
     flex-shrink: 0;
+    object-fit: contain;
   }
 }
 
