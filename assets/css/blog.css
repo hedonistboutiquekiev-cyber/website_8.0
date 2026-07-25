@@ -438,13 +438,19 @@
     font-size: 11px;
     flex-direction: column;
     align-items: flex-start;
-    gap: 4px;
+    gap: 12px;
   }
 
   .blog-article-meta .blog-author-avatar{
-    width: 26px !important;
-    height: 26px !important;
-    max-width: 26px !important;
+    flex: 0 0 auto;
+    width: 72px !important;
+    height: 72px !important;
+    max-width: 72px !important;
+  }
+
+  .blog-article-meta .blog-author-details{
+    flex: 1 1 100%;
+    gap: 6px;
   }
 
   .blog-article-meta .dot{ display: none; }
