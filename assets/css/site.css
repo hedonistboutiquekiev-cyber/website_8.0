@@ -1757,10 +1757,10 @@ select, select option {
 
   .footer .alba-logo,
   .footer .footer-social--xl .alba-logo {
-    width: 26px;
-    height: 26px;
-    max-width: 26px;
-    max-height: 26px;
+    width: 52px;
+    height: 52px;
+    max-width: 52px;
+    max-height: 52px;
     margin-left: 3px;
     margin-top: 0 !important;
     flex-shrink: 0;
