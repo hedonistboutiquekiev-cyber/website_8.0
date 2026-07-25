@@ -218,6 +218,17 @@
   font-weight: 600;
 }
 
+.blog-author-avatar{
+  width: 38px;
+  height: 38px;
+  border-radius: 50%;
+  object-fit: cover;
+  border: 2px solid rgba(148,163,184,0.7);
+  box-shadow: 0 4px 14px rgba(0,0,0,0.6);
+  flex-shrink: 0;
+  margin-right: 2px;
+}
+
 .blog-article-meta .dot{
   opacity: .5;
 }
@@ -341,9 +352,101 @@
   margin: 0 auto;
 }
 
-@media (max-width: 640px){
-  .blog-hero .page-title{ font-size: 30px; }
-  .blog-article-title{ font-size: 24px; }
+@media (max-width: 768px){
+  .blog-article{
+    padding: 0 16px;
+    margin-bottom: 60px;
+  }
+
+  .blog-article-cover{
+    max-height: 280px;
+    margin: 24px 0 22px;
+    border-radius: 16px;
+  }
+
+  .blog-article-title{
+    font-size: 24px;
+    line-height: 1.28;
+  }
+
+  .blog-article-meta{
+    font-size: 12px;
+    gap: 6px;
+    margin-bottom: 22px;
+    padding-bottom: 16px;
+  }
+
+  .blog-article-body{
+    font-size: 15px;
+    line-height: 1.75;
+  }
+
+  .blog-article-body p{
+    margin: 0 0 16px;
+  }
+
+  .blog-article-body h2{
+    font-size: 19px;
+    margin: 28px 0 12px;
+  }
+
+  .blog-share{
+    flex-wrap: wrap;
+    gap: 10px;
+    margin-top: 32px;
+    padding-top: 18px;
+  }
+
   .blog-pagenav{ grid-template-columns: 1fr; }
   .blog-pagenav-item.is-next{ text-align: left; }
+}
+
+@media (max-width: 480px){
+  .blog-hero .page-title{ font-size: 30px; }
+
+  .blog-article{
+    padding: 0 12px;
+  }
+
+  .blog-article-cover{
+    max-height: 220px;
+    margin: 20px 0 18px;
+  }
+
+  .blog-article-title{
+    font-size: 22px;
+  }
+
+  .blog-article-meta{
+    font-size: 11px;
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 4px;
+  }
+
+  .blog-article-meta .dot{ display: none; }
+
+  .blog-article-body{
+    font-size: 14.5px;
+    line-height: 1.7;
+  }
+
+  .blog-article-body h2{
+    font-size: 17px;
+  }
+
+  .blog-article-body p,
+  .blog-article-body h2,
+  .blog-article-title{
+    overflow-wrap: anywhere;
+    word-break: break-word;
+  }
+
+  .blog-share span{ width: 100%; }
+
+  .blog-share a,
+  .blog-share button{
+    width: 38px;
+    height: 38px;
+  }
 }
