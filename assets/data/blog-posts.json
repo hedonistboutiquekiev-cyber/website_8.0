@@ -8,7 +8,7 @@
     {
       "slug": "uzay-teleskoplari",
       "category": "uzay",
-      "publishAt": "2026-07-26T00:00:00+03:00",
+      "publishAt": "2026-07-26T08:00:00+03:00",
       "cover": "/assets/images/blog/uzay-teleskoplari-cover.jpg",
       "readingMinutes": 4,
       "author": { "tr": "Aslı Bolat", "en": "Aslı Bolat", "ru": "Аслы Болат" },
@@ -34,7 +34,7 @@
     {
       "slug": "yeni-uzay-cagi",
       "category": "uzay",
-      "publishAt": "2026-08-02T00:00:00+03:00",
+      "publishAt": "2026-08-02T00:08:00+03:00",
       "cover": "/assets/images/blog/yeni-uzay-cagi-cover.jpg",
       "readingMinutes": 4,
       "author": { "tr": "Aslı Bolat", "en": "Aslı Bolat", "ru": "Аслы Болат" },
