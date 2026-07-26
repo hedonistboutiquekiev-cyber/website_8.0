@@ -65,8 +65,9 @@
 /* ── Card grid ── */
 .blog-grid{
   display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+  grid-template-columns: repeat(auto-fit, minmax(min(300px, 100%), 1fr));
   gap: 26px;
+  width: 100%;
 }
 
 .blog-empty{
@@ -420,6 +421,12 @@
 
 @media (max-width: 480px){
   .blog-hero .page-title{ font-size: 30px; }
+
+  .blog-card-title,
+  .blog-card-excerpt{
+    overflow-wrap: anywhere;
+    word-break: break-word;
+  }
 
   .blog-article{
     padding: 0 12px;
