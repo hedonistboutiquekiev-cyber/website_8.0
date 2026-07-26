@@ -319,11 +319,9 @@ select, select option {
 
 }
 
-/* Hide DFS and BLOG from header menu (keep SHOP visible) */
+/* Hide DFS from header menu (keep SHOP and BLOG visible) */
 
-.main-nav a[href="/dfs.html"],
-
-.main-nav a[href="/blog.html"]{
+.main-nav a[href="/dfs.html"]{
 
   display:none !important;
 
@@ -3069,6 +3067,10 @@ html {
   max-width: 100%;
   width: 100% !important;
   min-width: 100% !important;
+}
+
+img, svg, video, iframe, table, pre {
+  max-width: 100%;
 }
 
 body {
