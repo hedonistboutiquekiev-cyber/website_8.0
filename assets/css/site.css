@@ -1761,8 +1761,8 @@ select, select option {
     height: 78px;
     max-width: 78px;
     max-height: 78px;
-    margin-left: 0.05px;
-    margin-top: 0 !important;
+    margin-left: -20px;
+    margin-top: -10px !important;
     flex-shrink: 0;
     object-fit: contain;
   }
