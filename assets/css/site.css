@@ -1759,7 +1759,7 @@ select, select option {
     height: 78px;
     max-width: 78px;
     max-height: 78px;
-    margin-left: -15px;
+    margin-left: 5px;
     margin-top: -33px !important;
     flex-shrink: 0;
     object-fit: contain;
